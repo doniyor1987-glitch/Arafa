@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="uz" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arafa Kuni — Zikr va Duolar</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Scheherazade+New:wght@400;700&family=Cinzel:wght@400;600&family=Lora:ital,wght@0,400;0,500;1,400&display=swap');
+
+  :root {
+    --gold: #C9A84C;
+    --gold-light: #E8C97A;
+    --gold-dark: #8B6914;
+    --cream: #FAF6ED;
+    --brown-deep: #2C1A0E;
+    --brown-mid: #5C3D1E;
+    --green-light: #2D6B46;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background-color: var(--brown-deep);
+    color: var(--cream);
+    font-family: Georgia, 'Times New Roman', serif;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 20% 20%, rgba(201,168,76,0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(26,74,46,0.15) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 20px 16px 60px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .header {
+    text-align: center;
+    padding: 40px 20px 28px;
+  }
+
+  .bismillah {
+    font-family: 'Scheherazade New', Georgia, serif;
+    font-size: clamp(1.8rem, 7vw, 3rem);
+    color: var(--gold-light);
+    text-shadow: 0 0 30px rgba(201,168,76,0.4);
+    line-height: 1.5;
+    margin-bottom: 20px;
+    display: block;
+  }
+
+  .ornament {
+    color: var(--gold);
+    font-size: 1.4rem;
+    letter-spacing: 6px;
+    opacity: 0.7;
+    display: block;
+    margin: 6px 0 14px;
+  }
+
+  h1 {
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: clamp(1.3rem, 4vw, 2rem);
+    color: var(--gold);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  .subtitle {
+    font-size: 0.92rem;
+    color: rgba(250,246,237,0.55);
+    font-style: italic;
+    letter-spacing: 1px;
+  }
+
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 24px 0;
+  }
+  .divider-line { flex: 1; height: 1px; background: linear-gradient(to right, transparent, var(--gold-dark), transparent); }
+  .divider-gem { color: var(--gold); font-size: 1rem; }
+
+  .section-title {
+    font-family: 'Cinzel', Georgia, serif;
+    color: var(--gold-light);
+    font-size: 0.78rem;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    text-align: center;
+    margin-bottom: 18px;
+    opacity: 0.85;
+  }
+
+  /* ===== CARD ===== */
+  .card {
+    background: linear-gradient(135deg, rgba(242,232,208,0.06) 0%, rgba(92,61,30,0.12) 100%);
+    border: 1px solid rgba(201,168,76,0.22);
+    border-radius: 12px;
+    padding: 20px 20px 16px;
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: border-color 0.25s, transform 0.1s;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  .card:active { transform: scale(0.982); }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(to right, transparent, var(--gold), transparent);
+    opacity: 0.5;
+  }
+
+  .card-green {
+    background: linear-gradient(135deg, rgba(26,74,46,0.28) 0%, rgba(45,107,70,0.12) 100%);
+    border-color: rgba(45,107,70,0.4);
+  }
+  .card-green::before {
+    background: linear-gradient(to right, transparent, #2D6B46, transparent);
+    opacity: 0.7;
+  }
+  .card-green .arabic { color: #7DCEA0; }
+  .card-green .counter-box { background: rgba(45,107,70,0.2); border-color: rgba(45,107,70,0.5); }
+  .card-green .counter-num { color: #7DCEA0; }
+  .card-green .progress-fill { background: linear-gradient(to right, #1A4A2E, #7DCEA0); }
+  .card-green .tap-hint { color: rgba(125,206,160,0.45); }
+  .card-green .done-mark { color: #7DCEA0; }
+
+  /* Done state */
+  .card.done { border-color: rgba(201,168,76,0.65); }
+  .card-green.done { border-color: rgba(125,206,160,0.65); }
+
+  .done-mark {
+    display: none;
+    position: absolute;
+    top: 14px;
+    left: 16px;
+    font-size: 0.75rem;
+    color: var(--gold);
+    font-weight: bold;
+  }
+  .card.done .done-mark { display: block; }
+
+  /* Top row */
+  .card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+
+  .card-num {
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 0.68rem;
+    color: var(--gold-dark);
+    letter-spacing: 1px;
+    opacity: 0.75;
+  }
+
+  .counter-box {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(201,168,76,0.12);
+    border: 1px solid rgba(201,168,76,0.32);
+    border-radius: 30px;
+    padding: 4px 14px 4px 10px;
+  }
+
+  .counter-num {
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 1.1rem;
+    color: var(--gold);
+    font-weight: 700;
+    min-width: 26px;
+    text-align: center;
+    display: inline-block;
+    transition: transform 0.12s;
+  }
+
+  .counter-lbl {
+    font-size: 0.66rem;
+    color: rgba(201,168,76,0.6);
+  }
+
+  /* Arabic */
+  .arabic {
+    font-family: 'Scheherazade New', 'Arabic Typesetting', Georgia, serif;
+    font-size: clamp(1.4rem, 5vw, 2.1rem);
+    color: var(--gold-light);
+    text-align: right;
+    line-height: 2;
+    direction: rtl;
+    margin-bottom: 12px;
+    text-shadow: 0 0 16px rgba(201,168,76,0.18);
+  }
+
+  .translit {
+    font-style: italic;
+    font-size: 0.86rem;
+    color: rgba(250,246,237,0.5);
+    margin-bottom: 8px;
+    padding: 5px 0;
+    border-top: 1px dashed rgba(201,168,76,0.15);
+    border-bottom: 1px dashed rgba(201,168,76,0.15);
+    line-height: 1.65;
+  }
+
+  .translation {
+    font-size: 0.9rem;
+    color: rgba(250,246,237,0.8);
+    line-height: 1.7;
+    margin-top: 9px;
+  }
+
+  /* Bottom */
+  .card-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 12px;
+    gap: 8px;
+  }
+
+  .target-badge {
+    display: inline-block;
+    background: rgba(201,168,76,0.1);
+    border: 1px solid rgba(201,168,76,0.22);
+    color: rgba(201,168,76,0.65);
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 0.66rem;
+    letter-spacing: 0.5px;
+    padding: 2px 10px;
+    border-radius: 20px;
+  }
+
+  .tap-hint {
+    font-size: 0.68rem;
+    color: rgba(201,168,76,0.35);
+    font-style: italic;
+  }
+
+  /* Progress */
+  .progress-wrap {
+    margin-top: 11px;
+    height: 3px;
+    background: rgba(201,168,76,0.1);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(to right, var(--gold-dark), var(--gold));
+    border-radius: 2px;
+    transition: width 0.25s ease;
+  }
+
+  /* Ripple */
+  .ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(201,168,76,0.15);
+    transform: scale(0);
+    animation: rippleAnim 0.45s ease-out forwards;
+    pointer-events: none;
+  }
+  .card-green .ripple { background: rgba(125,206,160,0.15); }
+
+  @keyframes rippleAnim {
+    to { transform: scale(5); opacity: 0; }
+  }
+
+  /* Reset button */
+  .reset-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(201,168,76,0.08);
+    border: 1px solid rgba(201,168,76,0.28);
+    color: rgba(201,168,76,0.65);
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 0.7rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 9px 22px;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: all 0.22s;
+  }
+  .reset-btn:hover {
+    background: rgba(201,168,76,0.17);
+    border-color: rgba(201,168,76,0.55);
+    color: var(--gold);
+  }
+  .reset-btn:active { transform: scale(0.95); }
+
+  /* Info box */
+  .info-box {
+    background: rgba(201,168,76,0.06);
+    border-left: 3px solid var(--gold);
+    border-radius: 0 8px 8px 0;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    font-size: 0.87rem;
+    color: rgba(250,246,237,0.75);
+    line-height: 1.72;
+  }
+  .info-box strong { color: var(--gold-light); }
+
+  .hadith {
+    background: rgba(92,61,30,0.25);
+    border: 1px solid rgba(201,168,76,0.15);
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin: 18px 0;
+    font-style: italic;
+    font-size: 0.87rem;
+    color: rgba(250,246,237,0.65);
+    line-height: 1.78;
+    text-align: center;
+  }
+  .hadith cite {
+    display: block;
+    margin-top: 9px;
+    font-style: normal;
+    color: var(--gold-dark);
+    font-size: 0.76rem;
+  }
+
+  .footer {
+    text-align: center;
+    padding: 28px 0 10px;
+    color: rgba(201,168,76,0.32);
+    font-size: 0.76rem;
+    letter-spacing: 2px;
+  }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--brown-deep); }
+  ::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 3px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <span class="bismillah">بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ</span>
+    <span class="ornament">✦ ✦ ✦</span>
+    <h1>Arafa Kuni</h1>
+    <p class="subtitle">Zul-hijja oyining 9-kuni — Yilning eng ulug' kuni</p>
+  </div>
+
+  <div class="hadith">
+    «Arafa kuni qilingan duo — duolarning eng yaxshisidir. Men va mendan avvalgi payg'ambarlar aytgan eng yaxshi so'z:
+    <strong style="color:var(--gold-light);font-style:normal;"> لَا إِلَٰهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ »</strong>
+    <cite>— Imom Termiziy rivoyati</cite>
+  </div>
+
+  <div style="text-align:center;margin-bottom:10px;">
+    <button class="reset-btn" id="resetBtn">↺ &nbsp; Hammasini Tiklash</button>
+  </div>
+
+  <div class="divider"><div class="divider-line"></div><span class="divider-gem">❖</span><div class="divider-line"></div></div>
+  <div class="section-title">✦ Eng Afzal Zikr ✦</div>
+
+  <div class="card card-green" data-id="1" data-target="100">
+    <span class="done-mark">✓ Bajarildi</span>
+    <div class="card-top">
+      <span class="card-num">01</span>
+      <div class="counter-box"><span class="counter-num">0</span><span class="counter-lbl">marta</span></div>
+    </div>
+    <div class="arabic">لَا إِلَٰهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ</div>
+    <div class="translit">Lā ilāha illallāhu waḥdahu lā sharīka lah, lahul-mulku wa lahul-ḥamdu wa huwa ʿalā kulli shay'in qadīr</div>
+    <div class="translation">Allohdan o'zga haqiqiy iloh yo'q. U yakkau-yagona, Uning sherik yo'q. Mulk Uniki, hamd Uniki, U hamma narsaga Qodirdir.</div>
+    <div class="card-bottom"><span class="target-badge">Maqsad: 100 marta</span><span class="tap-hint">bosib sanang →</span></div>
+    <div class="progress-wrap"><div class="progress-fill"></div></div>
+  </div>
+
+  <div class="card" data-id="2" data-target="100">
+    <span class="done-mark">✓ Bajarildi</span>
+    <div class="card-top">
+      <span class="card-num">02</span>
+      <div class="counter-box"><span class="counter-num">0</span><span class="counter-lbl">marta</span></div>
+    </div>
+    <div class="arabic">اللَّهُ أَكْبَرُ، اللَّهُ أَكْبَرُ، لَا إِلَٰهَ إِلَّا اللَّهُ، اللَّهُ أَكْبَرُ، اللَّهُ أَكْبَرُ وَلِلَّهِ الْحَمْدُ</div>
+    <div class="translit">Allāhu Akbar, Allāhu Akbar, Lā ilāha illallāh, Allāhu Akbar, Allāhu Akbar wa lillāhil-ḥamd</div>
+    <div class="translation">Alloh ulug'dir, Alloh ulug'dir, Allohdan o'zga iloh yo'q, Alloh ulug'dir, Alloh ulug'dir, barcha hamd Allohga!</div>
+    <div class="card-bottom"><span class="target-badge">Arafa va Tashriq kunlarida</span><span class="tap-hint">bosib sanang →</span></div>
+    <div class="progress-wrap"><div class="progress-fill"></div></div>
+  </div>
+
+  <div class="divider"><div class="divider-line"></div><span class="divider-gem">❖</span><div class="divider-line"></div></div>
+  <div class="section-title">✦ Arafa Kuni Zikrlari ✦</div>
+
+  <div class="info-box"><strong>Eslatma:</strong> Har bir kartani bosing — sanayman. Maqsadga yetganda ✓ Bajarildi belgisi chiqadi.</div>
+
+  <div class="card" data-id="3" data-target="100">
+    <span class="done-mark">✓ Bajarildi</span>
+    <div class="card-top">
+      <span class="card-num">03</span>
+      <div class="counter-box"><span class="counter-num">0</span><span class="counter-lbl">marta</span></div>
+    </div>
+    <div class="arabic">سُبْحَانَ اللهِ وَبِحَمْدِهِ سُبْحَانَ اللهِ الْعَظِيمِ</div>
+    <div class="translit">Subḥānallāhi wa biḥamdih, Subḥānallāhil-ʿAẓīm</div>
+    <div class="translation">Alloh pok va ulug'. Alloh — Buyuk Zot — barcha nuqsondan pokdir.</div>
+    <div class="card-bottom"><span class="target-badge">Maqsad: 100 marta</span><span class="tap-hint">bosib sanang →</span></div>
+    <div class="progress-wrap"><div class="progress-fill"></div></div>
+  </div>
+
+  <div class="card" data-id="4" data-target="100">
+    <span class="done-mark">✓ Bajarildi</span>
+    <div class="card-top">
+      <span class="card-num">04</span>
+      <div class="counter-box"><span class="counter-num">0</span><span class="counter-lbl">marta</span></div>
+    </div>
+    <div class="arabic">أَسْتَغْفِرُ اللهَ وَأَتُوبُ إِلَيْهِ</div>
+    <div class="translit">Astaghfirullāha wa atūbu ilayh</div>
+    <div class="translation">Allohdan mag'firat so'rayman va Unga tavba qilaman.</div>
+    <div class="card-bottom"><span class="target-badge">Maqsad: 100 marta</span><span class="tap-hint">bosib sanang →</span></div>
+    <div class="progress-wrap"><div class="progress-fill"></div></div>
+  </div>
+
+  <div class="card" data-id="5" data-target="33">
+    <span class="done-mark">✓ Bajarildi</span>
+    <div class="card-top">
+      <span class="card-num">05</span>
+      <div class="counter-box"><span class="counter-num">0</span><span class="counter-lbl">marta</span></div>
+    </div>
+    <div class="arabic">لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ الْعَلِيِّ الْعَظِيمِ</div>
+    <div class="translit">Lā ḥawla wa lā quwwata illā billāhil-ʿAliyyil-ʿAẓīm</div>
+    <div class="translation">Kuch-quvvat va to'siqdan saqlanish faqat Alloh — Oliy va Buyuk Zot — bilan bo'ladi.</div>
+    <div class="card-bottom"><span class="target-badge">Maqsad: 33 marta</span><span class="tap-hint">bosib sanang →</span></div>
+    <div class="progress-wrap"><div class="progress-fill"></div></div>
+  </div>
+
+  <div class="card" data-id="6" data-target="100">
+    <span class="done-mark">✓ Bajarildi</span>
+    <div class="card-top">
+      <span class="card-num">06</span>
+      <div class="counter-box"><span class="counter-num">0</span><span class="counter-lbl">marta</span></div>
+    </div>
+    <div class="arabic">اللَّهُمَّ صَلِّ عَلَى مُحَمَّدٍ وَعَلَى آلِ مُحَمَّدٍ</div>
+    <div class="translit">Allāhumma ṣalli ʿalā Muḥammadin wa ʿalā āli Muḥammad</div>
+    <div class="translation">Ey Alloh, Muhammadga va Uning oilasiga salotu salom yubor.</div>
+    <div class="card-bottom"><span class="target-badge">Maqsad: 100 marta</span><span class="tap-hint">bosib sanang →</span></div>
+    <div class="progress-wrap"><div class="progress-fill"></div></div>
+  </div>
+
+  <div class="divider"><div class="divider-line"></div><span class="divider-gem">❖</span><div class="divider-line"></div></div>
+  <div class="section-title">✦ Arafa Kuni Maxsus Duolari ✦</div>
+
+  <div class="card card-green" data-id="7" data-target="100">
+    <span class="done-mark">✓ Bajarildi</span>
+    <div class="card-top">
+      <span class="card-num">07</span>
+      <div class="counter-box"><span class="counter-num">0</span><span class="counter-lbl">marta</span></div>
+    </div>
+    <div class="arabic">اللَّهُمَّ إِنَّكَ عَفُوٌّ كَرِيمٌ تُحِبُّ الْعَفْوَ فَاعْفُ عَنِّي</div>
+    <div class="translit">Allāhumma innaka ʿafuwwun karīmun tuḥibbul-ʿafwa faʿfu ʿannī</div>
+    <div class="translation">Ey Alloh, Sen kechiruvchisan, sahiysan, kechirishni yaxshi ko'rasan — meni kechir!</div>
+    <div class="card-bottom"><span class="target-badge">Maqsad: 100 marta</span><span class="tap-hint">bosib sanang →</span></div>
+    <div class="progress-wrap"><div class="progress-fill"></div></div>
+  </div>
+
+  <div class="card" data-id="8" data-target="33">
+    <span class="done-mark">✓ Bajarildi</span>
+    <div class="card-top">
+      <span class="card-num">08</span>
+      <div class="counter-box"><span class="counter-num">0</span><span class="counter-lbl">marta</span></div>
+    </div>
+    <div class="arabic">اللَّهُمَّ اغْفِرْ لِي وَارْحَمْنِي وَاهْدِنِي وَعَافِنِي وَارْزُقْنِي</div>
+    <div class="translit">Allāhumma ghfir lī warḥamnī wahdinī wa ʿāfinī warzuqnī</div>
+    <div class="translation">Ey Alloh, meni mag'firat qil, rahm qil, hidoyat et, sog'lig' ber va rizq ber!</div>
+    <div class="card-bottom"><span class="target-badge">Maqsad: 33 marta</span><span class="tap-hint">bosib sanang →</span></div>
+    <div class="progress-wrap"><div class="progress-fill"></div></div>
+  </div>
+
+  <div class="card" data-id="9" data-target="33">
+    <span class="done-mark">✓ Bajarildi</span>
+    <div class="card-top">
+      <span class="card-num">09</span>
+      <div class="counter-box"><span class="counter-num">0</span><span class="counter-lbl">marta</span></div>
+    </div>
+    <div class="arabic">رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ</div>
+    <div class="translit">Rabbanā ātinā fid-dunyā ḥasanatan wa fil-ākhirati ḥasanatan wa qinā ʿadhāban-nār</div>
+    <div class="translation">Rabbimiz, bizga dunyoda ham, oxiratda ham yaxshilik ber va bizni do'zax azobidan asra!</div>
+    <div class="card-bottom"><span class="target-badge">Qur'on duosi — Al-Baqara 201</span><span class="tap-hint">bosib sanang →</span></div>
+    <div class="progress-wrap"><div class="progress-fill"></div></div>
+  </div>
+
+  <div class="card" data-id="10" data-target="100">
+    <span class="done-mark">✓ Bajarildi</span>
+    <div class="card-top">
+      <span class="card-num">10</span>
+      <div class="counter-box"><span class="counter-num">0</span><span class="counter-lbl">marta</span></div>
+    </div>
+    <div class="arabic">اللَّهُمَّ إِنِّي أَسْأَلُكَ الْجَنَّةَ وَأَعُوذُ بِكَ مِنَ النَّارِ</div>
+    <div class="translit">Allāhumma innī as'alukal-jannata wa aʿūdhu bika minan-nār</div>
+    <div class="translation">Ey Alloh, Senden jannatni so'rayman va do'zaxdan Senga panoh tilayman!</div>
+    <div class="card-bottom"><span class="target-badge">Maqsad: 100 marta</span><span class="tap-hint">bosib sanang →</span></div>
+    <div class="progress-wrap"><div class="progress-fill"></div></div>
+  </div>
+
+  <div class="card" data-id="11" data-target="10">
+    <span class="done-mark">✓ Bajarildi</span>
+    <div class="card-top">
+      <span class="card-num">11</span>
+      <div class="counter-box"><span class="counter-num">0</span><span class="counter-lbl">marta</span></div>
+    </div>
+    <div class="arabic">اللَّهُمَّ إِنِّي ظَلَمْتُ نَفْسِي ظُلْمًا كَثِيرًا وَلَا يَغْفِرُ الذُّنُوبَ إِلَّا أَنْتَ فَاغْفِرْ لِي مَغْفِرَةً مِنْ عِنْدِكَ وَارْحَمْنِي إِنَّكَ أَنْتَ الْغَفُورُ الرَّحِيمُ</div>
+    <div class="translit">Allāhumma innī ẓalamtu nafsī ẓulman kathīran wa lā yaghfirudh-dhunūba illā anta, faghfir lī maghfiratan min ʿindika warḥamnī innaka antal-Ghafūrur-Raḥīm</div>
+    <div class="translation">Ey Alloh, men o'zimga ko'p zulm qildim, gunohlarni Sendan boshqa hech kim kechira olmaydi. Meni O'zing tomondan kechirish bilan kechir va menga rahm qil. Albatta Sen Kechiruvchi va Rahmdorsan!</div>
+    <div class="card-bottom"><span class="target-badge">Tavba duosi — 10 marta</span><span class="tap-hint">bosib sanang →</span></div>
+    <div class="progress-wrap"><div class="progress-fill"></div></div>
+  </div>
+
+  <div class="divider"><div class="divider-line"></div><span class="divider-gem">❖</span><div class="divider-line"></div></div>
+  <div class="section-title">✦ Arafa Kuni Amallari ✦</div>
+
+  <div class="info-box"><strong>🌙 Ro'za tutish:</strong> Arafa kuni ro'za tutish — o'tgan va kelgusi yilning gunohlarini kaffora qiladi (Sahih Muslim).</div>
+  <div class="info-box"><strong>📖 Qur'on tilovati:</strong> Ko'proq Qur'on o'qing, ayniqsa Yosin, Al-Ikhlos va Mu'awwidhatayn suralari.</div>
+  <div class="info-box"><strong>🤲 Duo:</strong> Zuhr va Asr o'rtasida, Asr dan so'ng, ayniqsa kech tushayotganda duo qilishga e'tibor bering.</div>
+  <div class="info-box"><strong>💛 Sadaqa:</strong> Imkon qadar sadaqa bering va qarindoshlaringiz bilan aloqani mustahkamlang.</div>
+
+  <div class="divider"><div class="divider-line"></div><span class="divider-gem">❖</span><div class="divider-line"></div></div>
+
+  <div class="card card-green" style="text-align:center;padding:32px 22px;cursor:default;" id="finalCard">
+    <div class="arabic" style="text-align:center;font-size:clamp(1.3rem,4vw,1.85rem);">رَبَّنَا تَقَبَّلْ مِنَّا إِنَّكَ أَنْتَ السَّمِيعُ الْعَلِيمُ</div>
+    <div class="translit" style="text-align:center;">Rabbanā taqabbal minnā innaka antas-Samīʿul-ʿAlīm</div>
+    <div class="translation" style="text-align:center;margin-top:9px;">Rabbimiz, bizdan qabul qil! Albatta Sen Eshituvchi va Biluvchisan!</div>
+  </div>
+
+  <div style="text-align:center;margin-top:18px;">
+    <button class="reset-btn" id="resetBtn2">↺ &nbsp; Hammasini Tiklash</button>
+  </div>
+
+  <div class="footer">✦ &nbsp; Arafa Kuni — Yilning Eng Ulug' Kuni &nbsp; ✦</div>
+</div>
+
+<script>
+(function() {
+  // Attach click listeners to all counter cards
+  var cards = document.querySelectorAll('.card[data-id]');
+
+  cards.forEach(function(card) {
+    card.addEventListener('click', function(e) {
+      handleTap(card, e);
+    });
+  });
+
+  // Reset buttons
+  document.getElementById('resetBtn').addEventListener('click', resetAll);
+  document.getElementById('resetBtn2').addEventListener('click', resetAll);
+
+  // Final card — no counter
+  var finalCard = document.getElementById('finalCard');
+  if (finalCard) {
+    finalCard.style.cursor = 'default';
+    finalCard.removeAttribute('data-id');
+  }
+
+  function handleTap(card, e) {
+    var count = parseInt(card.getAttribute('data-count') || '0') + 1;
+    var target = parseInt(card.getAttribute('data-target') || '100');
+    card.setAttribute('data-count', count);
+
+    // Update number
+    var numEl = card.querySelector('.counter-num');
+    if (numEl) {
+      numEl.textContent = count;
+      // Bounce animation
+      numEl.style.transform = 'scale(1.45)';
+      setTimeout(function() { numEl.style.transform = 'scale(1)'; }, 130);
+    }
+
+    // Progress bar
+    var fill = card.querySelector('.progress-fill');
+    if (fill) {
+      var pct = Math.min((count / target) * 100, 100);
+      fill.style.width = pct + '%';
+    }
+
+    // Done state
+    if (count >= target) {
+      card.classList.add('done');
+    }
+
+    // Ripple
+    var rect = card.getBoundingClientRect();
+    var size = Math.max(rect.width, rect.height);
+    var x = (e.clientX - rect.left) - size / 2;
+    var y = (e.clientY - rect.top) - size / 2;
+    var ripple = document.createElement('span');
+    ripple.className = 'ripple';
+    ripple.style.width = size + 'px';
+    ripple.style.height = size + 'px';
+    ripple.style.left = x + 'px';
+    ripple.style.top = y + 'px';
+    card.appendChild(ripple);
+    setTimeout(function() { ripple.parentNode && ripple.parentNode.removeChild(ripple); }, 500);
+  }
+
+  function resetAll() {
+    cards.forEach(function(card) {
+      card.setAttribute('data-count', '0');
+      card.classList.remove('done');
+      var numEl = card.querySelector('.counter-num');
+      if (numEl) numEl.textContent = '0';
+      var fill = card.querySelector('.progress-fill');
+      if (fill) fill.style.width = '0%';
+    });
+  }
+})();
+</script>
+</body>
+</html>
