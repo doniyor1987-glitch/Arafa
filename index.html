@@ -13,7 +13,6 @@
     --gold-dark: #8B6914;
     --cream: #FAF6ED;
     --brown-deep: #2C1A0E;
-    --brown-mid: #5C3D1E;
     --green-light: #2D6B46;
   }
 
@@ -106,7 +105,6 @@
     opacity: 0.85;
   }
 
-  /* ===== CARD ===== */
   .card {
     background: linear-gradient(135deg, rgba(242,232,208,0.06) 0%, rgba(92,61,30,0.12) 100%);
     border: 1px solid rgba(201,168,76,0.22);
@@ -148,7 +146,6 @@
   .card-green .tap-hint { color: rgba(125,206,160,0.45); }
   .card-green .done-mark { color: #7DCEA0; }
 
-  /* Done state */
   .card.done { border-color: rgba(201,168,76,0.65); }
   .card-green.done { border-color: rgba(125,206,160,0.65); }
 
@@ -163,7 +160,6 @@
   }
   .card.done .done-mark { display: block; }
 
-  /* Top row */
   .card-top {
     display: flex;
     justify-content: space-between;
@@ -205,7 +201,6 @@
     color: rgba(201,168,76,0.6);
   }
 
-  /* Arabic */
   .arabic {
     font-family: 'Scheherazade New', 'Arabic Typesetting', Georgia, serif;
     font-size: clamp(1.4rem, 5vw, 2.1rem);
@@ -235,7 +230,6 @@
     margin-top: 9px;
   }
 
-  /* Bottom */
   .card-bottom {
     display: flex;
     align-items: center;
@@ -262,7 +256,6 @@
     font-style: italic;
   }
 
-  /* Progress */
   .progress-wrap {
     margin-top: 11px;
     height: 3px;
@@ -279,7 +272,6 @@
     transition: width 0.25s ease;
   }
 
-  /* Ripple */
   .ripple {
     position: absolute;
     border-radius: 50%;
@@ -294,7 +286,6 @@
     to { transform: scale(5); opacity: 0; }
   }
 
-  /* Reset button */
   .reset-btn {
     display: inline-flex;
     align-items: center;
@@ -318,7 +309,6 @@
   }
   .reset-btn:active { transform: scale(0.95); }
 
-  /* Info box */
   .info-box {
     background: rgba(201,168,76,0.06);
     border-left: 3px solid var(--gold);
@@ -351,6 +341,16 @@
     font-size: 0.76rem;
   }
 
+  /* Saved notice */
+  .saved-notice {
+    text-align: center;
+    font-size: 0.72rem;
+    color: rgba(201,168,76,0.45);
+    font-style: italic;
+    margin-bottom: 6px;
+    letter-spacing: 0.5px;
+  }
+
   .footer {
     text-align: center;
     padding: 28px 0 10px;
@@ -379,6 +379,8 @@
     <strong style="color:var(--gold-light);font-style:normal;"> لَا إِلَٰهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ »</strong>
     <cite>— Imom Termiziy rivoyati</cite>
   </div>
+
+  <div class="saved-notice" id="savedNotice">💾 Sanlar saqlanib qoladi</div>
 
   <div style="text-align:center;margin-bottom:10px;">
     <button class="reset-btn" id="resetBtn">↺ &nbsp; Hammasini Tiklash</button>
@@ -416,7 +418,7 @@
   <div class="divider"><div class="divider-line"></div><span class="divider-gem">❖</span><div class="divider-line"></div></div>
   <div class="section-title">✦ Arafa Kuni Zikrlari ✦</div>
 
-  <div class="info-box"><strong>Eslatma:</strong> Har bir kartani bosing — sanayman. Maqsadga yetganda ✓ Bajarildi belgisi chiqadi.</div>
+  <div class="info-box"><strong>Eslatma:</strong> Sanlar telefonda saqlanib qoladi — sahifani yopsangiz ham, qayta kirsangiz ham davom etadi.</div>
 
   <div class="card" data-id="3" data-target="100">
     <span class="done-mark">✓ Bajarildi</span>
@@ -563,10 +565,43 @@
 
 <script>
 (function() {
-  // Attach click listeners to all counter cards
+  var STORAGE_KEY = 'arafa_counts';
+
+  // Load saved counts
+  function loadCounts() {
+    try {
+      var saved = localStorage.getItem(STORAGE_KEY);
+      return saved ? JSON.parse(saved) : {};
+    } catch(e) {
+      return {};
+    }
+  }
+
+  // Save counts
+  function saveCounts(counts) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(counts));
+    } catch(e) {}
+  }
+
+  var counts = loadCounts();
   var cards = document.querySelectorAll('.card[data-id]');
 
+  // Apply saved state on load
   cards.forEach(function(card) {
+    var id = card.getAttribute('data-id');
+    var target = parseInt(card.getAttribute('data-target') || '100');
+    var count = parseInt(counts[id] || 0);
+
+    if (count > 0) {
+      card.setAttribute('data-count', count);
+      var numEl = card.querySelector('.counter-num');
+      if (numEl) numEl.textContent = count;
+      var fill = card.querySelector('.progress-fill');
+      if (fill) fill.style.width = Math.min((count / target) * 100, 100) + '%';
+      if (count >= target) card.classList.add('done');
+    }
+
     card.addEventListener('click', function(e) {
       handleTap(card, e);
     });
@@ -576,55 +611,49 @@
   document.getElementById('resetBtn').addEventListener('click', resetAll);
   document.getElementById('resetBtn2').addEventListener('click', resetAll);
 
-  // Final card — no counter
-  var finalCard = document.getElementById('finalCard');
-  if (finalCard) {
-    finalCard.style.cursor = 'default';
-    finalCard.removeAttribute('data-id');
-  }
-
   function handleTap(card, e) {
-    var count = parseInt(card.getAttribute('data-count') || '0') + 1;
+    var id = card.getAttribute('data-id');
     var target = parseInt(card.getAttribute('data-target') || '100');
+    var count = parseInt(card.getAttribute('data-count') || '0') + 1;
     card.setAttribute('data-count', count);
+
+    // Save
+    counts[id] = count;
+    saveCounts(counts);
 
     // Update number
     var numEl = card.querySelector('.counter-num');
     if (numEl) {
       numEl.textContent = count;
-      // Bounce animation
       numEl.style.transform = 'scale(1.45)';
       setTimeout(function() { numEl.style.transform = 'scale(1)'; }, 130);
     }
 
-    // Progress bar
+    // Progress
     var fill = card.querySelector('.progress-fill');
     if (fill) {
-      var pct = Math.min((count / target) * 100, 100);
-      fill.style.width = pct + '%';
+      fill.style.width = Math.min((count / target) * 100, 100) + '%';
     }
 
-    // Done state
-    if (count >= target) {
-      card.classList.add('done');
-    }
+    // Done
+    if (count >= target) card.classList.add('done');
 
     // Ripple
     var rect = card.getBoundingClientRect();
     var size = Math.max(rect.width, rect.height);
-    var x = (e.clientX - rect.left) - size / 2;
-    var y = (e.clientY - rect.top) - size / 2;
     var ripple = document.createElement('span');
     ripple.className = 'ripple';
     ripple.style.width = size + 'px';
     ripple.style.height = size + 'px';
-    ripple.style.left = x + 'px';
-    ripple.style.top = y + 'px';
+    ripple.style.left = (e.clientX - rect.left - size/2) + 'px';
+    ripple.style.top = (e.clientY - rect.top - size/2) + 'px';
     card.appendChild(ripple);
-    setTimeout(function() { ripple.parentNode && ripple.parentNode.removeChild(ripple); }, 500);
+    setTimeout(function() { if(ripple.parentNode) ripple.parentNode.removeChild(ripple); }, 500);
   }
 
   function resetAll() {
+    counts = {};
+    saveCounts(counts);
     cards.forEach(function(card) {
       card.setAttribute('data-count', '0');
       card.classList.remove('done');
