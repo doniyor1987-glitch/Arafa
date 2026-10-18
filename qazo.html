@@ -149,7 +149,7 @@ function rozaManage(){
  <div class="roza-big"><div class="roza-name">${result.name?safeHTML(result.name):'Qazo ro‘za hisobingiz'}</div><span>JAMI QAZO RO‘ZA</span><strong>${fmt(result.amount)}</strong><b>KUN RO‘ZA</b></div>
  <div class="roza-detail"><div><span>Davr</span><strong>${result.startYear} — ${result.endYear}</strong></div><div><span>Ramazon oylari</span><strong>${fmt(result.endYear-result.startYear+1)} ta</strong></div><div><span>Hisob</span><strong>${fmt(result.endYear-result.startYear+1)} × 30 = ${fmt(result.amount)} kun</strong></div></div>
  ${rozaPlans(Math.max(0,result.amount-roza.done))}
- <div class="warn">Har bir Ramazon <b>30 kun</b> deb olingan taxminiy hisob. Asl Ramazon 29 yoki 30 kun bo‘ladi. Bu natija barcha Ramazon kunlari tutilmagan deb hisoblaydi; ilgari tutilgan kunlarni inobatga oling.</div>
+ <div class="warning">Har bir Ramazon <b>30 kun</b> deb olingan taxminiy hisob. Asl Ramazon 29 yoki 30 kun bo‘ladi. Bu natija barcha Ramazon kunlari tutilmagan deb hisoblaydi; ilgari tutilgan kunlarni inobatga oling.</div>
  ${latest?'<button class="big-btn" data-act="rozaSave">Natijani hisobimga saqlash</button>':'<p class="caption">Bu hisob telefoningizda saqlangan.</p>'}
  </div>`:''}
  <div class="card"><h3>Ro‘za hisobim</h3><p>Jami: ${fmt(roza.debt)} · Tutilgan: ${fmt(roza.done)} · Qolgan: <b>${fmt(roza.debt-roza.done)} kun</b></p>
