@@ -132,11 +132,11 @@ function namozFields(){return `<div class="field"><label for="namozGender">Hisob
 ${calcMode==='year'?namozField('calcYears','Namoz qoldirilgan yillar (balog‘atdan keyin)','type="number" min="0.01" max="100" step="any" inputmode="decimal"'):namozField('calcFrom','Qoldirilgan davr boshlanishi (balog‘atdan oldin emas)','type="date"')+namozField('calcTo','Namoz muntazam boshlangan sana (hisobga kirmaydi)','type="date"')}
 ${namozDraft.gender==='female'?`<div class="period-card"><h3>Ayollar uchun hisob</h3>
 ${namozField('hayzDays','Hayz: oyiga o‘rtacha necha kun?','type="number" min="0" max="10" step="any" inputmode="decimal"')}
-<p class="caption">Nifosdan tashqari tanlangan davr uchun o‘rtacha kiriting (0–10). Hayz bo‘lmagan oylarni, jumladan homiladorlik oylarini ham o‘rtachada hisobga oling.</p>
+<p class="caption">Nifosdan tashqari davrning oylik o‘rtachasi. Hayz bo‘lmagan oylarni ham hisobga oling.</p>
 ${namozField('birthCount','Nifosi shu davrga tushgan tug‘ruqlar soni','type="number" min="0" max="100" step="1" inputmode="numeric"')}
 ${namozField('nifasDays','Shu davrdagi jami haqiqiy nifos kunlari','type="number" min="0" step="1" inputmode="numeric"')}
-<p class="caption">Har tug‘ruq avtomatik 40 kun hisoblanmaydi. Masalan, 2 tug‘ruqda 20 va 30 kun bo‘lsa, jami 50 kiriting. Faqat tanlangan davr ichidagi kunlarni qo‘shing; har tug‘ruq uchun Hanafiy chegarasi 40 kun.</p>
-<p class="caption">Hanafiy hisob: hayz va nifosdagi namozlar qazo qilinmaydi. Istihoda kunlarini ayirmang. Avval nifos ayriladi, hayz taxmini qolgan davrga qo‘llanadi. Bu kunlik taxmin, alohida namoz vaqtlariga oid fatvo emas.</p></div>`:''}`;}
+<p class="caption">Faqat shu davrdagi haqiqiy nifos kunlarini kiriting (har tug‘ruq uchun ko‘pi bilan 40 kun).</p>
+<p class="caption">Hayz va nifos kunlari avtomatik ayriladi — davrdan oldindan ayirmang.</p></div>`:''}`;}
 
 const ROZA_KEY='arafa_roza_v1';
 function readRoza(){try{const x=JSON.parse(localStorage.getItem(ROZA_KEY));if(x&&Number.isSafeInteger(x.debt)&&Number.isSafeInteger(x.done)&&x.debt>=x.done&&x.done>=0)return x;}catch(e){}return {debt:0,done:0};}
@@ -181,9 +181,9 @@ function manage(count){
  <div class="calc-choose"><button class="${calcType==='namoz'?'chosen':''}" data-act="calcType" data-value="namoz">🕌<b>Namoz</b><small>Qazo namozlar</small></button><button class="${calcType==='roza'?'chosen':''}" data-act="calcType" data-value="roza">🌙<b>Ro‘za</b><small>Qazo ro‘zalar</small></button></div>
  <div class="card"><div class="calc-toggle"><button class="${calcMode==='year'?'chosen':''}" data-act="calcMode" data-value="year">Yil bo‘yicha</button><button class="${calcMode==='date'?'chosen':''}" data-act="calcMode" data-value="date">Sana bo‘yicha</button></div>
  ${namozFields()}
- <p class="caption">Faqat balog‘atdan keyin namoz qoldirilgan davrni kiriting. Ado etilgan davrlarni qo‘shmang. Yil = 365.2425 kun; sana oralig‘ida oxirgi sana kirmaydi. Hayz/nifosni oldindan ayirmang — dastur bir marta ayiradi.</p>
+ <p class="caption">Faqat balog‘atdan keyin namoz o‘qilmagan davrni kiriting.</p>
  <button class="big-btn" data-act="calcRun">Hisoblash</button>
- ${calcPreview&&calcPreview.type===calcType&&calcPreview.mode===calcMode?`<div class="calc-result" id="namozResult" role="status"><b>Natija: ${fmt(calcPreview.amount*6)} ta namoz</b><p>Davr: ${fmt(calcPreview.days)} kun − nifos: ${fmt(calcPreview.nifas)} kun − hayz (taxmin): ${fmt(calcPreview.hayz)} kun = ${fmt(calcPreview.amount)} kun.</p><p>Har bir namoz turidan ${fmt(calcPreview.amount)} ta (vitr bilan). Bu taxminiy hisob.</p><button class="big-btn" data-act="calcSave">Hisobimga saqlash</button></div>`:''}
+ ${calcPreview&&calcPreview.type===calcType&&calcPreview.mode===calcMode?`<div class="calc-result" id="namozResult" role="status"><b>Natija: ${fmt(calcPreview.amount*6)} ta namoz</b>${namozDraft.gender==='female'?`<p>Hayz: ${fmt(calcPreview.hayz)} kun, nifos: ${fmt(calcPreview.nifas)} kun ayrildi.</p>`:''}<p>Har bir namoz turidan ${fmt(calcPreview.amount)} ta (vitr bilan). Taxminiy hisob.</p><button class="big-btn" data-act="calcSave">Hisobimga saqlash</button></div>`:''}
 
  </div>
  <div class="card"><h3>${calcType==='namoz'?'Namoz':'Ro‘za'} hisobi</h3>${calcType==='namoz'?`<p>Jami: ${fmt(count.total)} · O‘qilgan: ${fmt(count.completed)} · Qolgan: <b>${fmt(count.total-count.completed)}</b></p><button class="big-btn secondary" data-act="navigate" data-tab="home">Dashboardga qaytish →</button>`:`<p>Jami: ${fmt(roza.debt)} · Tutilgan: ${fmt(roza.done)} · Qolgan: <b>${fmt(roza.debt-roza.done)}</b></p><div class="calc-roza-actions"><button data-act="rozaMinus" ${roza.done===0?'disabled':''}>−</button><b>${fmt(roza.done)} tutilgan</b><button data-act="rozaPlus" ${roza.done===roza.debt?'disabled':''}>+</button></div>`}</div>`;
