@@ -170,10 +170,10 @@ function manage(count){
  <div class="calc-choose"><button class="chosen" data-act="calcType" data-value="namoz">🕌<b>Namoz</b><small>Qazo namozlar</small></button><button data-act="calcType" data-value="roza">🌙<b>Ro‘za</b><small>Qazo ro‘zalar</small></button></div>
  <div class="card">
  <div class="calc-toggle"><button class="${calcMode==='year'?'chosen':''}" data-act="calcMode" data-value="year">Yil bo‘yicha</button><button class="${calcMode==='date'?'chosen':''}" data-act="calcMode" data-value="date">Sana bo‘yicha</button></div>
- ${calcMode==='year'?`<div class="field"><label for="calcYears">Qazo davri necha yil?</label><input id="calcYears" type="number" min="0.5" max="100" step="0.5" placeholder="Masalan, 5" inputmode="decimal"></div>`:`<div class="field"><label for="calcFrom">Davr boshlangan sana</label><input id="calcFrom" type="date"></div><div class="field"><label for="calcTo">Davr tugagan sana (shu kun ham hisoblanadi)</label><input id="calcTo" type="date"></div>`}
+ ${calcMode==='year'?`<div class="field"><label for="calcYears">Qazo davri necha yil?</label><input id="calcYears" type="number" min="0.5" max="100" step="0.5" placeholder="Masalan, 5" inputmode="decimal" value="${result?.yearInput||''}"></div>`:`<div class="field"><label for="calcFrom">Davr boshlangan sana</label><input id="calcFrom" type="date" value="${result?.from||''}"></div><div class="field"><label for="calcTo">Davr tugagan sana (shu kun ham hisoblanadi)</label><input id="calcTo" type="date" value="${result?.to||''}"></div>`}
  <div class="field"><label>Bu davrda qaysi namozlarni qoldirgansiz?</label><div class="calc-toggle"><button data-act="missedMode" data-value="all" class="${missedMode==='all'?'chosen':''}">Hammasini</button><button data-act="missedMode" data-value="partial" class="${missedMode==='partial'?'chosen':''}">Ba’zilarini</button></div></div>
  ${missedMode==='partial'?`<p class="caption">Har bir namozdan necha foizini qoldirgansiz? 0% — o‘qilgan, 100% — umuman o‘qilmagan. Har birini alohida kiriting.</p>
- <div class="missed-pct-grid">${PRAYERS.map(p=>`<div class="missed-pct"><label for="pct-${p.id}">${p.name}</label><div><input id="pct-${p.id}" type="number" inputmode="numeric" min="0" max="100" step="1" placeholder="0–100"><span>%</span></div></div>`).join('')}</div>`:
+ <div class="missed-pct-grid">${PRAYERS.map(p=>`<div class="missed-pct"><label for="pct-${p.id}">${p.name}</label><div><input id="pct-${p.id}" type="number" inputmode="numeric" min="0" max="100" step="1" placeholder="0–100" value="${result?.percents?.[p.id]??''}"><span>%</span></div></div>`).join('')}</div>`:
  '<p class="caption">Tanlangan davrning har kuni 5 vaqt farz va vitr qazo bo‘lgan deb hisoblanadi.</p>'}
  <button class="big-btn" data-act="calcRun">Hisoblash</button>
  ${result?`<div class="calc-result">
@@ -204,9 +204,9 @@ function handleNamozAction(act,b){
  if(act==='missedMode'){missedMode=b.dataset.value;calcPreview=null;render();return true;}
  if(act==='calcRun'){
    if(calcType!=='namoz')return false;
-   let days=null,from=null,to=null;
+   let days=null,from=null,to=null,yearInput='',percents={};
    if(calcMode==='year'){
-     const val=Number($('calcYears').value);
+     yearInput=$('calcYears').value.trim();const val=Number(yearInput);
      if(!Number.isFinite(val)||val<=0||val>100){alert('0 dan katta va 100 yildan oshmagan davr kiriting.');return true;}
      days=Math.round(val*365.2425);
    }else{
@@ -221,9 +221,9 @@ function handleNamozAction(act,b){
      if(missedMode==='all'){amounts[p.id]=days;continue;}
      const input=$('pct-'+p.id),raw=(input&&input.value||'').trim(),n=Number(raw);
      if(!raw||!Number.isSafeInteger(n)||n<0||n>100){alert(p.name+' uchun qoldirilgan ulushni 0 dan 100 gacha kiriting.');if(input)input.focus();return true;}
-     amounts[p.id]=Math.round(days*n/100);
+     percents[p.id]=n;amounts[p.id]=Math.round(days*n/100);
    }
-   calcPreview={type:'namoz',mode:calcMode,days,from,to,amounts};render();return true;
+   calcPreview={type:'namoz',mode:calcMode,days,from,to,amounts,yearInput,percents};render();return true;
  }
  if(act==='calcSave'){
    const v=calcPreview;
