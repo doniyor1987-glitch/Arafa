@@ -85,9 +85,9 @@ function home(count){
   <button class="big-btn secondary" data-act="navigate" data-tab="manage">Yirik miqdorni belgilash →</button>`;
 }
 
-function periodActions(){return state.actions.filter(a=>a.type==='debt'&&typeof a.note==='string'&&/^DAVR\\|\\d{4}-\\d{2}-\\d{2}\\|\\d{4}-\\d{2}-\\d{2}\\|/.test(a.note));}
+function periodActions(){return state.actions.filter(a=>a.type==='debt'&&typeof a.note==='string'&&/^DAVR\|\d{4}-\d{2}-\d{2}\|\d{4}-\d{2}-\d{2}\|/.test(a.note));}
 function parseCalendarDate(s){
- if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(s))return null;
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(s))return null;
  const ms=Date.parse(s+'T00:00:00Z');if(!Number.isFinite(ms)||new Date(ms).toISOString().slice(0,10)!==s)return null;return ms;
 }
 function historyPeriods(){
