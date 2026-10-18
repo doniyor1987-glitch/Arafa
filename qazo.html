@@ -27,6 +27,7 @@
 .roza-detail{margin:24px 0}.roza-detail>div{display:flex;justify-content:space-between;gap:8px;padding:13px 0;border-bottom:1px dashed #dce6de}.roza-detail span{color:#76867b;font-size:13px}.roza-detail strong{font-size:14px;text-align:right}
 .roza-plan h3{font-size:16px}.roza-plan-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.roza-plan-card{background:#f1f7f5;border:1px solid #c9ded3;border-radius:13px;padding:13px 9px}.roza-plan-card strong{display:block;font-size:12px;min-height:31px}.roza-plan-number{font-weight:800;color:#246a50;font-size:16px;min-height:47px;margin-top:9px}.roza-plan-card small{font-size:11px;color:#657c6e}
 @media(max-width:430px){.roza-year-grid{grid-template-columns:1fr}.roza-plan-grid{grid-template-columns:1fr}.roza-plan-card{display:grid;grid-template-columns:1fr 1fr;align-items:center}.roza-plan-card strong,.roza-plan-number{min-height:0;margin:0}.roza-plan-card small{grid-column:2}}
+.roza-dashboard{margin-top:18px}.roza-dashboard-head{display:flex;justify-content:space-between;align-items:center;gap:8px}.roza-dashboard-head h3{font-size:17px;margin:0}.roza-dashboard-head span{font-size:12px;color:#7b8c7f}.roza-dashboard-total{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;margin:14px 0 5px}.roza-dashboard-total strong{font-size:28px;color:#245a46}.roza-dashboard-total small{color:#728477}.roza-dashboard .roza-plan{margin-top:16px}.roza-dashboard .roza-plan-grid{gap:8px}.roza-dashboard .roza-plan-card{padding:10px}.roza-dashboard .roza-plan h3{font-size:14px}
 </style>
 </head>
 <body>
@@ -85,12 +86,20 @@ function actionName(a){const p=Object.keys(a.delta);return p.length===6?'Barcha 
 function timeLabel(iso){return new Date(iso).toLocaleString('uz-UZ',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});}
 function recentToday(){return state.actions.filter(a=>a.type==='done'&&localDate(new Date(a.at))===nowLocalDate()).reduce((acc,a)=>acc+sum(a.delta),0);}
 function hero(count){const remaining=count.total-count.completed,p=count.total?Math.min(100,100*count.completed/count.total):0;return `<div class="hero"><div class="hero-eyebrow">QOLGAN QAZO NAMOZLAR</div><h1>${fmt(remaining)} <small>ta</small></h1><div class="hero-sub">Har bir qazo namozingiz qayd etiladi</div><div class="progress"><div style="width:${p.toFixed(2)}%"></div></div><div class="hero-stats"><span>Jami <strong>${fmt(count.total)}</strong></span><span>O‘qilgan <strong>${fmt(count.completed)}</strong></span><span><strong>${Math.round(p)}%</strong> bajarildi</span></div></div>`;}
+function rozaDashboard(){
+ const remaining=Math.max(0,roza.debt-roza.done);
+ if(roza.debt===0)return `<div class="card roza-dashboard"><div class="roza-dashboard-head"><h3>🌙 Ro‘za hisobim</h3><span>Hali hisob kiritilmagan</span></div><p>Qazo ro‘za kunlaringizni kiritsangiz, tugatish rejasi shu yerda ko‘rinadi.</p><button class="big-btn secondary" data-act="goRoza">Ro‘zani hisoblash →</button></div>`;
+ return `<div class="card roza-dashboard"><div class="roza-dashboard-head"><h3>🌙 Ro‘za rejasi</h3><span>${fmt(roza.done)} kun tutilgan</span></div><div class="roza-dashboard-total"><strong>${fmt(remaining)} kun</strong><small>qoldi · jami ${fmt(roza.debt)} kun</small></div>
+ ${remaining>0?rozaPlans(remaining):'<p class="caption">Barcha qazo ro‘zalar ado etilgan deb belgilangan.</p>'}
+ <button class="big-btn secondary" data-act="goRoza">Ro‘za hisobini boshqarish →</button></div>`;
+}
 function home(count){
   return `${hero(count)}${count.total===0?'<div class="warning">Boshlash uchun <b>Hisob</b> bo‘limida dastlabki qazo miqdorini kiriting. 12–39 yoshning hammasini avtomatik qazo deb olmang.</div>':''}
   <div class="section-head"><h2>Namozlar</h2><span>+1 o‘qildi / −1 bekor</span></div>
   <div class="prayer-list">${PRAYERS.map(p=>`<article class="prayer"><div class="prayer-top"><div><div class="prayer-name">${p.name}</div><div class="prayer-rakat">${p.rakat} rakat</div></div><span style="color:#b5aa7f">✦</span></div><div class="prayer-count">${fmt(count.remaining[p.id])} <span>qoldi</span></div><div class="btn-row"><button class="circle-btn" aria-label="${p.name} oxirgi belgilangan bittani bekor qilish" data-act="sub" data-prayer="${p.id}" ${count.done[p.id]===0?'disabled':''}>−</button><span class="done-count">${fmt(count.done[p.id])} o‘qilgan</span><button class="circle-btn plus" aria-label="${p.name}dan bittasi o‘qildi" data-act="plus" data-prayer="${p.id}" ${count.remaining[p.id]===0?'disabled':''}>+</button></div></article>`).join('')}</div>
   <div class="section-head"><h2>Bugungi natija</h2></div><div class="mini-stats"><div class="card"><div class="caption">Bugun o‘qilgan</div><div class="metric">${fmt(recentToday())}</div></div><div class="card"><div class="caption">Jami ado etilgan</div><div class="metric">${fmt(count.completed)}</div></div></div>
-  <button class="big-btn secondary" data-act="navigate" data-tab="manage">Yirik miqdorni belgilash →</button>`;
+  ${rozaDashboard()}
+  <button class="big-btn secondary" data-act="navigate" data-tab="manage">Qazoni hisoblash →</button>`;
 }
 
 function periodActions(){return state.actions.filter(a=>a.type==='debt'&&typeof a.note==='string'&&/^DAVR\|\d{4}-\d{2}-\d{2}\|\d{4}-\d{2}-\d{2}\|/.test(a.note));}
@@ -119,7 +128,7 @@ let calcType='namoz',calcMode='year',calcPreview=null;
 const ROZA_KEY='arafa_roza_v1';
 function readRoza(){try{const x=JSON.parse(localStorage.getItem(ROZA_KEY));if(x&&Number.isSafeInteger(x.debt)&&Number.isSafeInteger(x.done)&&x.debt>=x.done&&x.done>=0)return x;}catch(e){}return {debt:0,done:0};}
 let roza=readRoza();
-let rozaDraft={name:typeof roza.name==='string'?roza.name:'',startYear:roza.startYear||'',endYear:roza.endYear||''};
+let rozaDraft={startYear:roza.startYear||'',endYear:roza.endYear||''};
 function calcDays(a,b){const x=Date.parse(a+'T00:00:00Z'),y=Date.parse(b+'T00:00:00Z');if(!Number.isFinite(x)||!Number.isFinite(y)||new Date(x).toISOString().slice(0,10)!==a||new Date(y).toISOString().slice(0,10)!==b||y<=x||y>Date.now())return null;return Math.round((y-x)/86400000);}
 function safeHTML(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function rozaDuration(days){
@@ -133,22 +142,20 @@ function rozaPlans(remaining){
 }
 function rozaManage(){
  const latest=calcPreview&&calcPreview.type==='roza'?calcPreview:null;
- const saved=!latest&&Number.isSafeInteger(roza.startYear)&&Number.isSafeInteger(roza.endYear)&&roza.endYear>=roza.startYear?{amount:roza.debt,startYear:roza.startYear,endYear:roza.endYear,name:roza.name||''}:null;
+ const saved=!latest&&Number.isSafeInteger(roza.startYear)&&Number.isSafeInteger(roza.endYear)&&roza.endYear>=roza.startYear?{amount:roza.debt,startYear:roza.startYear,endYear:roza.endYear}:null;
  const result=latest||saved;
  const tabs=`<div class="section-head"><h2>Qazoni hisoblash</h2><span>Hanafiy mazhabi</span></div><div class="calc-choose"><button data-act="calcType" data-value="namoz">🕌<b>Namoz</b><small>Qazo namozlar</small></button><button class="chosen" data-act="calcType" data-value="roza">🌙<b>Ro‘za</b><small>Qazo ro‘zalar</small></button></div>`;
  return `${tabs}
  <div class="card">
  <h3>Qazo ro‘zalarni hisoblash</h3>
- <div class="field"><label for="rozaName">Ismingiz (ixtiyoriy)</label><input id="rozaName" type="text" maxlength="50" autocomplete="name" placeholder="Ismingiz" value="${safeHTML(rozaDraft.name)}"></div>
  <div class="roza-year-grid"><div class="field"><label for="rozaStartYear">Balog‘atga yetgan yilingiz</label><input id="rozaStartYear" type="number" inputmode="numeric" min="1900" max="2100" step="1" placeholder="Masalan, 2018" value="${safeHTML(rozaDraft.startYear)}"></div>
  <div class="field"><label for="rozaEndYear">Ro‘za tutmagan oxirgi yil</label><input id="rozaEndYear" type="number" inputmode="numeric" min="1900" max="2100" step="1" placeholder="Masalan, 2026" value="${safeHTML(rozaDraft.endYear)}"></div></div>
  <p class="caption">Boshlanish va tugash yillari ham hisobga kiradi. Masalan, 2018–2026 = 9 ta Ramazon.</p>
  <button class="big-btn" data-act="rozaRun">Qazo ro‘zani hisoblash →</button>
  </div>
  ${result?`<div class="card roza-result">
- <div class="roza-big"><div class="roza-name">${result.name?safeHTML(result.name):'Qazo ro‘za hisobingiz'}</div><span>JAMI QAZO RO‘ZA</span><strong>${fmt(result.amount)}</strong><b>KUN RO‘ZA</b></div>
+ <div class="roza-big"><div class="roza-name">Qazo ro‘za hisobingiz</div><span>JAMI QAZO RO‘ZA</span><strong>${fmt(result.amount)}</strong><b>KUN RO‘ZA</b></div>
  <div class="roza-detail"><div><span>Davr</span><strong>${result.startYear} — ${result.endYear}</strong></div><div><span>Ramazon oylari</span><strong>${fmt(result.endYear-result.startYear+1)} ta</strong></div><div><span>Hisob</span><strong>${fmt(result.endYear-result.startYear+1)} × 30 = ${fmt(result.amount)} kun</strong></div></div>
- ${rozaPlans(Math.max(0,result.amount-roza.done))}
  <div class="warning">Har bir Ramazon <b>30 kun</b> deb olingan taxminiy hisob. Asl Ramazon 29 yoki 30 kun bo‘ladi. Bu natija barcha Ramazon kunlari tutilmagan deb hisoblaydi; ilgari tutilgan kunlarni inobatga oling.</div>
  ${latest?'<button class="big-btn" data-act="rozaSave">Natijani hisobimga saqlash</button>':'<p class="caption">Bu hisob telefoningizda saqlangan.</p>'}
  </div>`:''}
@@ -185,17 +192,18 @@ document.addEventListener('click',e=>{
  if(b.dataset.year){selected=$('choosePrayer')?.value||selected;years=b.dataset.year;statusText='';render();return;}
  const act=b.dataset.act,p=b.dataset.prayer;
  if(act==='navigate'){tab=b.dataset.tab;statusText='';render();window.scrollTo(0,0);}
+ if(act==='goRoza'){tab='manage';calcType='roza';calcPreview=null;render();window.scrollTo(0,0);return;}
  if(act==='calcType'){calcType=b.dataset.value;calcPreview=null;render();return;}
  if(act==='calcMode'){calcMode=b.dataset.value;calcPreview=null;render();return;}
 
  if(act==='rozaRun'){
-   const n=$('rozaName').value.trim().slice(0,50),startText=$('rozaStartYear').value.trim(),endText=$('rozaEndYear').value.trim();
+   const startText=$('rozaStartYear').value.trim(),endText=$('rozaEndYear').value.trim();
    const start=Number(startText),end=Number(endText),current=new Date().getFullYear();
    if(!/^\d{4}$/.test(startText)||!/^\d{4}$/.test(endText)||!Number.isSafeInteger(start)||!Number.isSafeInteger(end)||start<1900||end>current||start>end||end-start>100){
      alert('Yillarni to‘g‘ri kiriting: balog‘at yili oxirgi yilga teng yoki undan oldin bo‘lishi kerak.');return;
    }
-   rozaDraft={name:n,startYear:start,endYear:end};
-   calcPreview={type:'roza',mode:'years',amount:(end-start+1)*30,name:n,startYear:start,endYear:end};
+   rozaDraft={startYear:start,endYear:end};
+   calcPreview={type:'roza',mode:'years',amount:(end-start+1)*30,startYear:start,endYear:end};
    render();return;
  }
  if(act==='rozaSave'){
@@ -203,7 +211,8 @@ document.addEventListener('click',e=>{
    const v=calcPreview;
    if(v.amount<roza.done){alert('Yangi jami qazo ilgari tutilgan ro‘za sonidan kam.');return;}
    if(!confirm('Hisobdagi jami ro‘za soni '+fmt(v.amount)+' kunga almashtirilsinmi? Oldin belgilangan tutilgan ro‘zalar saqlanadi.'))return;
-   const next={...roza,debt:v.amount,name:v.name,startYear:v.startYear,endYear:v.endYear};
+   const {name:oldName,...rozaWithoutName}=roza;
+   const next={...rozaWithoutName,debt:v.amount,startYear:v.startYear,endYear:v.endYear};
    try{localStorage.setItem(ROZA_KEY,JSON.stringify(next));roza=next;calcPreview=null;statusText='Ro‘za hisobi saqlandi';render();}
    catch(e){alert('Ro‘za hisobini saqlashda xatolik yuz berdi.');}
    return;
