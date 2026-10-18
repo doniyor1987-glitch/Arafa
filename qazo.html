@@ -33,6 +33,7 @@
 <body>
   <div id="app" class="app-shell"></div>
   <noscript>Ilovadan foydalanish uchun JavaScript yoqilgan bo‘lishi kerak.</noscript>
+  <script src="./namoz-estimate.js"></script>
   <script>
 /* Qazo namozlarim hisobi — account-free, offline-first PWA. No data is sent to a server. */
 'use strict';
@@ -125,6 +126,18 @@ function periodView(){
 }
 
 let calcType='namoz',calcMode='year',calcPreview=null;
+let namozDraft={gender:'male',calcYears:'',calcFrom:'',calcTo:'',hayzDays:'',birthCount:'0',nifasDays:'0'};
+function namozField(id,label,attrs){return '<div class="field"><label for="'+id+'">'+label+'</label><input id="'+id+'" '+attrs+' value="'+safeHTML(namozDraft[id])+'"></div>';}
+function namozFields(){return `<div class="field"><label for="namozGender">Hisob kim uchun?</label><select id="namozGender"><option value="male" ${namozDraft.gender==='male'?'selected':''}>Erkak</option><option value="female" ${namozDraft.gender==='female'?'selected':''}>Ayol</option></select></div>
+${calcMode==='year'?namozField('calcYears','Namoz qoldirilgan yillar (balog‘atdan keyin)','type="number" min="0.01" max="100" step="any" inputmode="decimal"'):namozField('calcFrom','Qoldirilgan davr boshlanishi (balog‘atdan oldin emas)','type="date"')+namozField('calcTo','Namoz muntazam boshlangan sana (hisobga kirmaydi)','type="date"')}
+${namozDraft.gender==='female'?`<div class="period-card"><h3>Ayollar uchun hisob</h3>
+${namozField('hayzDays','Hayz: oyiga o‘rtacha necha kun?','type="number" min="0" max="10" step="any" inputmode="decimal"')}
+<p class="caption">Nifosdan tashqari tanlangan davr uchun o‘rtacha kiriting (0–10). Hayz bo‘lmagan oylarni, jumladan homiladorlik oylarini ham o‘rtachada hisobga oling.</p>
+${namozField('birthCount','Nifosi shu davrga tushgan tug‘ruqlar soni','type="number" min="0" max="100" step="1" inputmode="numeric"')}
+${namozField('nifasDays','Shu davrdagi jami haqiqiy nifos kunlari','type="number" min="0" step="1" inputmode="numeric"')}
+<p class="caption">Har tug‘ruq avtomatik 40 kun hisoblanmaydi. Masalan, 2 tug‘ruqda 20 va 30 kun bo‘lsa, jami 50 kiriting. Faqat tanlangan davr ichidagi kunlarni qo‘shing; har tug‘ruq uchun Hanafiy chegarasi 40 kun.</p>
+<p class="caption">Hanafiy hisob: hayz va nifosdagi namozlar qazo qilinmaydi. Istihoda kunlarini ayirmang. Avval nifos ayriladi, hayz taxmini qolgan davrga qo‘llanadi. Bu kunlik taxmin, alohida namoz vaqtlariga oid fatvo emas.</p></div>`:''}`;}
+
 const ROZA_KEY='arafa_roza_v1';
 function readRoza(){try{const x=JSON.parse(localStorage.getItem(ROZA_KEY));if(x&&Number.isSafeInteger(x.debt)&&Number.isSafeInteger(x.done)&&x.debt>=x.done&&x.done>=0)return x;}catch(e){}return {debt:0,done:0};}
 let roza=readRoza();
@@ -167,10 +180,11 @@ function manage(count){
  return `<div class="section-head"><h2>Qazoni hisoblash</h2><span>Hanafiy mazhabi</span></div>
  <div class="calc-choose"><button class="${calcType==='namoz'?'chosen':''}" data-act="calcType" data-value="namoz">🕌<b>Namoz</b><small>Qazo namozlar</small></button><button class="${calcType==='roza'?'chosen':''}" data-act="calcType" data-value="roza">🌙<b>Ro‘za</b><small>Qazo ro‘zalar</small></button></div>
  <div class="card"><div class="calc-toggle"><button class="${calcMode==='year'?'chosen':''}" data-act="calcMode" data-value="year">Yil bo‘yicha</button><button class="${calcMode==='date'?'chosen':''}" data-act="calcMode" data-value="date">Sana bo‘yicha</button></div>
- ${calcMode==='year'?'<div class="field"><label for="calcYears">Necha yil?</label><input id="calcYears" type="number" min="0.5" max="100" step="0.5" placeholder="Masalan, 5" inputmode="decimal"></div>':`<div class="field"><label for="calcFrom">Hisob boshlanish sanasi (balog‘atga yetgan sanangiz)</label><input id="calcFrom" type="date"></div><div class="field"><label for="calcTo">Muntazam ${calcType==='namoz'?'namoz o‘qish':'ro‘za tutish'} boshlangan sana</label><input id="calcTo" type="date"></div>`}
- <p class="caption">Oldin ado etilgan namoz yoki ro‘zalarni hisobga olib, qazo davrini belgilang. Hisob dastlabki taxmin, diniy hukm emas.</p>
+ ${namozFields()}
+ <p class="caption">Faqat balog‘atdan keyin namoz qoldirilgan davrni kiriting. Ado etilgan davrlarni qo‘shmang. Yil = 365.2425 kun; sana oralig‘ida oxirgi sana kirmaydi. Hayz/nifosni oldindan ayirmang — dastur bir marta ayiradi.</p>
  <button class="big-btn" data-act="calcRun">Hisoblash</button>
- ${calcPreview&&calcPreview.type===calcType&&calcPreview.mode===calcMode?`<div class="calc-result"><b>Natija: ${fmt(calcPreview.amount*(calcType==='namoz'?6:1))} ${calcType==='namoz'?'ta namoz':'kun ro‘za'}</b><p>${calcType==='namoz'?('Har bir namoz turidan '+fmt(calcPreview.amount)+' ta (vitr bilan).'):'Ramazonlar bo‘yicha taxminiy hisob. Haqiqiy tutilmagan kunlarni tekshiring.'}</p><button class="big-btn" data-act="calcSave">Hisobimga saqlash</button></div>`:''}
+ ${calcPreview&&calcPreview.type===calcType&&calcPreview.mode===calcMode?`<div class="calc-result" id="namozResult" role="status"><b>Natija: ${fmt(calcPreview.amount*6)} ta namoz</b><p>Davr: ${fmt(calcPreview.days)} kun − nifos: ${fmt(calcPreview.nifas)} kun − hayz (taxmin): ${fmt(calcPreview.hayz)} kun = ${fmt(calcPreview.amount)} kun.</p><p>Har bir namoz turidan ${fmt(calcPreview.amount)} ta (vitr bilan). Bu taxminiy hisob.</p><button class="big-btn" data-act="calcSave">Hisobimga saqlash</button></div>`:''}
+
  </div>
  <div class="card"><h3>${calcType==='namoz'?'Namoz':'Ro‘za'} hisobi</h3>${calcType==='namoz'?`<p>Jami: ${fmt(count.total)} · O‘qilgan: ${fmt(count.completed)} · Qolgan: <b>${fmt(count.total-count.completed)}</b></p><button class="big-btn secondary" data-act="navigate" data-tab="home">Dashboardga qaytish →</button>`:`<p>Jami: ${fmt(roza.debt)} · Tutilgan: ${fmt(roza.done)} · Qolgan: <b>${fmt(roza.debt-roza.done)}</b></p><div class="calc-roza-actions"><button data-act="rozaMinus" ${roza.done===0?'disabled':''}>−</button><b>${fmt(roza.done)} tutilgan</b><button data-act="rozaPlus" ${roza.done===roza.debt?'disabled':''}>+</button></div>`}</div>`;
 }
@@ -218,18 +232,13 @@ document.addEventListener('click',e=>{
    return;
  }
  if(act==='calcRun'){
-   let amount=0;
-   if(calcMode==='year'){
-     const val=Number($('calcYears').value);
-     if(!Number.isFinite(val)||val<=0||val>100){alert('0 dan katta va 100 yildan oshmagan yil kiriting.');return;}
-     amount=Math.round(val*(calcType==='namoz'?365.2425:29.5));
-   }else{
-     const days=calcDays($('calcFrom').value,$('calcTo').value);
-     if(days===null){alert('To‘g‘ri sanalarni kiriting.');return;}
-     amount=calcType==='namoz'?days:Math.round(days/354.367*29.5);
-   }
-   if(amount<=0){alert('Hisob natijasi nol.');return;}
-   calcPreview={type:calcType,mode:calcMode,amount};render();return;
+   try{
+     const days=calcMode==='year'?Math.round(Number(namozDraft.calcYears)*365.2425):calcDays(namozDraft.calcFrom,namozDraft.calcTo);
+     if(namozDraft.gender==='female'&&['hayzDays','birthCount','nifasDays'].some(k=>namozDraft[k].trim()===''))throw new Error('Ayollar uchun barcha maydonlarni to‘ldiring (yo‘q bo‘lsa 0).');
+     const result=estimateNamoz(days,namozDraft.gender,Number(namozDraft.hayzDays),Number(namozDraft.birthCount),Number(namozDraft.nifasDays));
+     calcPreview={type:calcType,mode:calcMode,...result};render();
+   }catch(error){calcPreview=null;alert(error.message);}
+   return;
  }
  if(act==='calcSave'){
    if(!calcPreview||calcPreview.type!==calcType||calcPreview.mode!==calcMode)return;
@@ -285,7 +294,14 @@ document.addEventListener('click',e=>{
  }
  if(act==='reset'){if(confirm('Rostdan ham HAMMA hisoblarni o‘chirmoqchimisiz?')&&confirm('Bu amaldan ortga qaytib bo‘lmaydi. Zaxira olganingizni tekshiring.'))commit(newState(),'Hisob tozalandi');}
 });
+document.addEventListener('input',e=>{
+ if(Object.prototype.hasOwnProperty.call(namozDraft,e.target.id)){
+   namozDraft[e.target.id]=e.target.value;calcPreview=null;$('namozResult')?.remove();
+ }
+});
 document.addEventListener('change',async e=>{
+ if(e.target.id==='namozGender'){namozDraft.gender=e.target.value;calcPreview=null;render();return;}
+
  if(e.target?.id==='choosePrayer'){selected=e.target.value;return;}
  if(e.target?.id!=='backupInput')return;
  const f=e.target.files?.[0];if(!f)return;
