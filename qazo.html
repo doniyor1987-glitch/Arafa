@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="uz">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#2c1a0e">
+  <meta name="description" content="Qazo namozlarim hisobi: boshlang‘ich qazo miqdori, ado etilgan namozlar va tarix. Akkauntsiz.">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Qazo namozlarim hisobi">
+  <title>Qazo namozlarim hisobi — Arafa</title>
+  <style>
+:root{--ink:#17352e;--muted:#698078;--green:#164b3f;--deep:#123c32;--gold:#c49a5a;--line:#e4e9e4;--bg:#f6f7f2;--white:#fff;--light:#edf4ed;--red:#ad4545;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg)}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;}body{overflow-x:hidden}button,input,select{font:inherit}button{cursor:pointer}button:disabled{opacity:.45;cursor:not-allowed}.app-shell{max-width:700px;margin:0 auto;padding:0 17px calc(105px + env(safe-area-inset-bottom));min-height:100vh}
+.topbar{padding:calc(24px + env(safe-area-inset-top)) 0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}.brand{display:flex;align-items:center;gap:11px}.emblem{display:grid;place-items:center;background:var(--deep);width:47px;height:47px;border-radius:14px;color:#e8d8b3;font-size:29px}.topbar strong{display:block;font-size:19px;letter-spacing:-.4px}.eyebrow{font-size:11px;letter-spacing:1.7px;color:#8e968c;font-weight:750;text-transform:uppercase}.pill{border:1px solid #dbe6da;padding:7px 11px;border-radius:99px;font-size:11px;color:#477266;background:#f0f7ee}.hero{background:linear-gradient(122deg,#153c32,#24614d);color:#fff;border-radius:24px;padding:25px 23px;position:relative;overflow:hidden;box-shadow:0 14px 28px rgba(19,65,52,.12)}.hero:after{content:"☾";position:absolute;right:14px;top:-40px;font-size:180px;color:rgba(235,225,188,.09);pointer-events:none}.hero-eyebrow{font-size:12px;color:#bed4c9;position:relative;z-index:1}.hero h1{font-size:39px;line-height:1.1;letter-spacing:-1.5px;font-weight:760;margin:8px 0 7px;position:relative;z-index:1}.hero h1 small{font-size:16px;letter-spacing:0;font-weight:500;color:#c8dacd}.hero-sub{font-size:13px;color:#d6e7d9;margin-top:3px}.progress{height:8px;margin:23px 0 11px;background:#426a5c;border-radius:50px;overflow:hidden}.progress>div{height:100%;background:#ddc18a;border-radius:40px;transition:width .2s}.hero-stats{display:flex;gap:12px;justify-content:space-between;font-size:12px;color:#d2e1d6}.hero-stats strong{font-weight:750;color:#fff;font-size:14px}.section-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:25px 1px 12px}.section-head h2{font-size:17px;margin:0;letter-spacing:-.3px}.section-head span{font-size:12px;color:var(--muted)}.prayer-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.prayer{background:#fff;border:1px solid var(--line);border-radius:17px;padding:15px 13px;box-shadow:0 1px 2px rgba(0,0,0,.02)}.prayer-top{display:flex;justify-content:space-between;align-items:flex-start}.prayer-name{font-size:16px;font-weight:750}.prayer-rakat{font-size:11px;color:#8d9b91;margin-top:2px}.prayer-count{margin:16px 0 14px;font-size:25px;font-weight:770;letter-spacing:-.4px}.prayer-count span{font-weight:500;font-size:11px;color:var(--muted)}.btn-row{display:flex;align-items:center;justify-content:space-between;gap:7px}.circle-btn{height:36px;width:39px;border-radius:10px;border:1px solid #dbe5dc;background:#f3f7f0;color:var(--deep);font-size:24px;line-height:1}.circle-btn.plus{background:#205e49;color:white;border-color:#205e49}.done-count{font-size:12px;color:var(--muted);text-align:center}.card{background:var(--white);border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:15px}.card h3{margin:0 0 6px;font-size:17px}.card p{color:var(--muted);font-size:13px;line-height:1.65;margin:0 0 12px}.field{margin-top:13px}.field label{display:block;font-size:12px;font-weight:700;margin-bottom:7px}.field input,.field select{width:100%;height:46px;border:1px solid #cedad2;background:#fff;border-radius:11px;padding:0 12px;font-size:16px;outline-offset:2px;color:var(--ink)}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.form-grid .field{margin-top:0}.toggle{display:flex;gap:7px;margin-top:14px;flex-wrap:wrap}.toggle button{background:#f5f7f4;border:1px solid #dce5db;border-radius:9px;padding:10px 13px;font-size:13px;color:var(--ink)}.toggle button.active{background:#e4f1e6;border-color:#7cab94;color:#155540;font-weight:750}.big-btn{border:0;background:var(--deep);color:#fff;font-size:14px;font-weight:760;min-height:48px;border-radius:12px;padding:12px 17px;width:100%;margin-top:15px}.big-btn.secondary{background:#e8efe8;color:var(--deep)}.big-btn.danger{background:#faeeee;color:#a33e3e}.caption{font-size:12px;line-height:1.6;color:var(--muted)}.warning{background:#fcf6e8;border:1px solid #eadfbc;padding:13px;border-radius:12px;color:#715c31;font-size:12px;line-height:1.55;margin-top:13px}.history-row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:13px 0;border-bottom:1px solid var(--line)}.history-row:last-child{border:0}.history-title{font-size:13px;font-weight:700}.history-sub{font-size:11px;color:var(--muted);margin-top:4px}.amount{font-size:14px;font-weight:780;white-space:nowrap}.amount.add{color:#996b30}.amount.done{color:#17815b}.muted{text-align:center;color:var(--muted);font-size:13px;padding:20px}.small{font-size:12px}.toolbar{display:flex;gap:9px}.toolbar .big-btn{margin-top:5px}.nav{position:fixed;z-index:20;left:50%;bottom:0;transform:translateX(-50%);width:min(100%,700px);display:grid;grid-template-columns:repeat(4,1fr);background:#fff;border-top:1px solid #e0e8de;padding:10px 9px calc(10px + env(safe-area-inset-bottom));box-shadow:0 -10px 25px rgba(25,45,32,.04)}.nav button{border:0;background:transparent;display:flex;flex-direction:column;gap:5px;align-items:center;color:#8b9a90;font-size:11px;padding:7px 4px;border-radius:12px}.nav button strong{font-size:19px;line-height:1}.nav button.active{background:#edf4eb;color:#1e614d;font-weight:750}.mini-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}.mini-stats .card{margin:0}.metric{font-size:24px;font-weight:750;margin-top:9px}.setup-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.setup-field{border:1px solid var(--line);border-radius:12px;padding:12px}.setup-field label{font-size:12px;font-weight:700;display:block;margin-bottom:5px}.setup-field input{width:100%;height:41px;border:1px solid #ccd9ce;border-radius:9px;padding:0 9px;font-size:16px}.status{font-size:12px;color:#2e7156;margin:12px 2px 0;min-height:18px}a{color:var(--green)}@media(min-width:600px){.prayer-list{grid-template-columns:repeat(3,minmax(0,1fr))}.app-shell{padding-left:25px;padding-right:25px}}
+
+/* Arafa bilan umumiy navigatsiya */
+.arafa-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:17px 0 0;font-size:12px;color:#9d875e}.arafa-bar a{color:#7a5e2b;text-decoration:none;font-weight:750;border-bottom:1px solid #e0d0ad;padding-bottom:3px}.arafa-bar span{color:#8c958b}.topbar{padding-top:18px}.topbar strong{font-size:clamp(16px,4.3vw,19px)}.emblem{background:#2c1a0e;color:#e8c97a}.hero{background:linear-gradient(125deg,#2c1a0e,#285b43)}.hero:after{color:rgba(232,201,122,.12)}.progress>div{background:#e8c97a}
+
+  </style>
+</head>
+<body>
+  <div id="app" class="app-shell"></div>
+  <noscript>Ilovadan foydalanish uchun JavaScript yoqilgan bo‘lishi kerak.</noscript>
+  <script>
+/* Qazo namozlarim hisobi — account-free, offline-first PWA. No data is sent to a server. */
+'use strict';
+const KEY = 'qazo_hisobim_local_v1';
+const PRAYERS = [
+  {id:'bomdod',name:'Bomdod',rakat:2},
+  {id:'peshin',name:'Peshin',rakat:4},
+  {id:'asr',name:'Asr',rakat:4},
+  {id:'shom',name:'Shom',rakat:3},
+  {id:'xufton',name:'Xufton',rakat:4},
+  {id:'vitr',name:'Vitr',rakat:3}
+];
+const IDS = PRAYERS.map(x=>x.id);
+const blank = () => Object.fromEntries(IDS.map(k=>[k,0]));
+const newState = () => ({version:1,actions:[]});
+let state = (()=>{try {const raw=localStorage.getItem(KEY); if(!raw)return newState(); const s=JSON.parse(raw); if(validate(s))return s;}catch(_){} return newState();})();
+let tab='home', kind='debt', selected='all', years='5', statusText='';
+const $ = id => document.getElementById(id);
+const fmt=n=>Number(n).toLocaleString('en-US');
+const localDate=(d=new Date())=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const nowLocalDate=()=>localDate();
+function sum(o){return Object.values(o).reduce((a,b)=>a+b,0);}
+function evaluate(s){
+  const debt=blank(),done=blank();
+  for(const a of s.actions){
+    const target=a.type==='debt'?debt:done;
+    for(const [key,value] of Object.entries(a.delta))target[key]+=value;
+    if(IDS.some(k=>done[k]<0||debt[k]<0||done[k]>debt[k]))throw new Error('Hisob mos emas');
+  }
+  return {debt,done,remaining:Object.fromEntries(IDS.map(k=>[k,debt[k]-done[k]])),total:sum(debt),completed:sum(done)};
+}
+function validate(s){
+  if(!s||s.version!==1||!Array.isArray(s.actions)||s.actions.length>100000)return false;
+  for(const a of s.actions){
+    if(!['debt','done'].includes(a.type)||typeof a.at!=='string'||!Number.isFinite(Date.parse(a.at))||!a.delta||typeof a.delta!=='object'||Array.isArray(a.delta))return false;
+    const entries=Object.entries(a.delta);
+    if(entries.length<1||entries.length>6)return false;
+    if(entries.some(([k,v])=>!IDS.includes(k)||!Number.isSafeInteger(v)||Math.abs(v)>10000000||v===0))return false;
+  }
+  try {evaluate(s);return true;} catch(_){return false;}
+}
+function commit(next,notice){
+  if(!validate(next)){alert('Kiritilgan qiymat qoldiqdan oshib ketdi yoki noto‘g‘ri.');return false;}
+  try {localStorage.setItem(KEY,JSON.stringify(next));}catch(_){alert('Ma’lumotni saqlab bo‘lmadi. Telefon xotirasini tekshiring.');return false;}
+  state=next;statusText=notice||'Saqlandi';render();return true;
+}
+function record(type,delta,note){
+  return commit({...state,actions:[...state.actions,{type,delta,at:new Date().toISOString(),note:note||''}]},'Hisob saqlandi');
+}
+function actionName(a){const p=Object.keys(a.delta);return p.length===6?'Barcha namozlar':p.map(k=>PRAYERS.find(x=>x.id===k)?.name||k).join(', ');}
+function timeLabel(iso){return new Date(iso).toLocaleString('uz-UZ',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});}
+function recentToday(){return state.actions.filter(a=>a.type==='done'&&localDate(new Date(a.at))===nowLocalDate()).reduce((acc,a)=>acc+sum(a.delta),0);}
+function hero(count){const remaining=count.total-count.completed,p=count.total?Math.min(100,100*count.completed/count.total):0;return `<div class="hero"><div class="hero-eyebrow">QOLGAN QAZO NAMOZLAR</div><h1>${fmt(remaining)} <small>ta</small></h1><div class="hero-sub">Har bir qazo namozingiz qayd etiladi</div><div class="progress"><div style="width:${p.toFixed(2)}%"></div></div><div class="hero-stats"><span>Jami <strong>${fmt(count.total)}</strong></span><span>O‘qilgan <strong>${fmt(count.completed)}</strong></span><span><strong>${Math.round(p)}%</strong> bajarildi</span></div></div>`;}
+function home(count){
+  return `${hero(count)}${count.total===0?'<div class="warning">Boshlash uchun <b>Hisob</b> bo‘limida dastlabki qazo miqdorini kiriting. 12–39 yoshning hammasini avtomatik qazo deb olmang.</div>':''}
+  <div class="section-head"><h2>Namozlar</h2><span>+1 o‘qildi / −1 bekor</span></div>
+  <div class="prayer-list">${PRAYERS.map(p=>`<article class="prayer"><div class="prayer-top"><div><div class="prayer-name">${p.name}</div><div class="prayer-rakat">${p.rakat} rakat</div></div><span style="color:#b5aa7f">✦</span></div><div class="prayer-count">${fmt(count.remaining[p.id])} <span>qoldi</span></div><div class="btn-row"><button class="circle-btn" aria-label="${p.name} oxirgi belgilangan bittani bekor qilish" data-act="sub" data-prayer="${p.id}" ${count.done[p.id]===0?'disabled':''}>−</button><span class="done-count">${fmt(count.done[p.id])} o‘qilgan</span><button class="circle-btn plus" aria-label="${p.name}dan bittasi o‘qildi" data-act="plus" data-prayer="${p.id}" ${count.remaining[p.id]===0?'disabled':''}>+</button></div></article>`).join('')}</div>
+  <div class="section-head"><h2>Bugungi natija</h2></div><div class="mini-stats"><div class="card"><div class="caption">Bugun o‘qilgan</div><div class="metric">${fmt(recentToday())}</div></div><div class="card"><div class="caption">Jami ado etilgan</div><div class="metric">${fmt(count.completed)}</div></div></div>
+  <button class="big-btn secondary" data-act="navigate" data-tab="manage">Yirik miqdorni belgilash →</button>`;
+}
+function manage(count){
+  return `<div class="section-head"><h2>Hisobni boshqarish</h2><span>Qo‘shish va belgilash</span></div>
+   <div class="card"><h3>Bir martada hisoblash</h3><p>1, 5, 10 yoki 20 yillik qazoni birdan hisobga qo‘shing yoki <b>haqiqatan o‘qilgan</b> qismini belgilang.</p>
+   <div class="toggle"><button data-kind="debt" class="${kind==='debt'?'active':''}">Qazoni hisobga qo‘shish</button><button data-kind="done" class="${kind==='done'?'active':''}">O‘qilganini belgilash</button></div>
+   <div class="field"><label>Namoz turi</label><select id="choosePrayer"><option value="all" ${selected==='all'?'selected':''}>Barcha 6 turdagi namoz</option>${PRAYERS.map(p=>`<option value="${p.id}" ${selected===p.id?'selected':''}>${p.name}</option>`).join('')}</select></div>
+   <div class="field"><label>Tezkor muddat</label><div class="toggle">${['1','5','10','20','custom'].map(y=>`<button data-year="${y}" class="${years===y?'active':''}">${y==='custom'?'Boshqa':y+' yil'}</button>`).join('')}</div></div>
+   <div class="field"><label>${years==='custom'?'Namoz miqdori (dona)':'Hisoblanadigan kunlar'}</label><input id="bulkQuantity" type="number" min="1" max="10000000" inputmode="numeric" value="${years==='custom'?'1':Number(years)*365}" ${years==='custom'?'':'readonly'}></div>
+   <div class="warning">1 yil = 365 kun deb olingan <b>taxminiy hisob</b>. "O‘qilganini belgilash" faqat haqiqatda ado etilgan qazo uchun ishlatiladi.</div>
+   <button class="big-btn" data-act="bulk">${kind==='debt'?'Hisobga qo‘shish':'Ado etilgan deb belgilash'}</button></div>
+   <div class="card"><h3>Yosh oralig‘i bo‘yicha taxmin</h3><p>Masalan, 12 yoshdan 18 yoshgacha namozlarning taxminan 80% i qoldirilgan bo‘lsa, shu davrni qo‘shing. Davrlarni o‘zingiz kiritasiz; bu diniy hukm emas.</p>
+   <div class="form-grid"><div class="field"><label for="ageFrom">Necha yoshdan?</label><input type="number" id="ageFrom" min="1" max="120" value="12" inputmode="numeric"></div><div class="field"><label for="ageTo">Necha yoshgacha?</label><input type="number" id="ageTo" min="1" max="120" value="18" inputmode="numeric"></div></div>
+   <div class="field"><label for="missedPct">Qoldirilgan ulush (0–100%)</label><input type="number" id="missedPct" min="0" max="100" value="100" inputmode="numeric"></div>
+   <div class="warning">Hisob: yosh farqi × 365.2425 kun × qoldirilgan ulush. Har bir namoz turiga teng ulush qo‘shiladi. Ilgari o‘qilganlari yoki alohida namoz turlari farq qilsa, quyidagi qo‘lda tuzatishdan foydalaning.</div>
+   <button class="big-btn" data-act="ageEstimate">Shu davr qazolarini qo‘shish</button></div>
+   <div class="card"><h3>Har bir namoz bo‘yicha tuzatish</h3><p>Avval o‘qigan namozlaringizni hisobga olib, boshlang‘ich qarzdorlikni qo‘lda o‘zgartiring. Bu yerda <b>jami qazo</b> ko‘rsatiladi (qolgan emas).</p><div class="setup-grid">${PRAYERS.map(p=>`<div class="setup-field"><label for="set-${p.id}">${p.name}</label><input id="set-${p.id}" data-manual="${p.id}" type="number" inputmode="numeric" min="${count.done[p.id]}" max="10000000" value="${count.debt[p.id]}"></div>`).join('')}</div><button class="big-btn secondary" data-act="manual">Miqdorlarni saqlash</button></div>`;
+}
+function history(){const rows=[...state.actions].reverse();return `<div class="section-head"><h2>Harakatlar tarixi</h2><span>${fmt(rows.length)} ta yozuv</span></div><div class="card">${rows.length?rows.slice(0,150).map(a=>`<div class="history-row"><div><div class="history-title">${a.type==='debt'?'Hisobga qo‘shildi / tuzatildi':'O‘qildi / tuzatildi'} · ${actionName(a)}</div><div class="history-sub">${timeLabel(a.at)}</div></div><div class="amount ${a.type==='debt'?'add':'done'}">${sum(a.delta)>0?'+':''}${fmt(sum(a.delta))}</div></div>`).join(''):'<div class="muted">Hozircha yozuv yo‘q.</div>'}</div><button class="big-btn secondary" data-act="undo" ${!rows.length?'disabled':''}>Oxirgi amalni bekor qilish</button><p class="caption">Xato kiritilgan oxirgi amalga qaytishingiz mumkin. Boshqa amalni tuzatish uchun Hisob bo‘limidan foydalaning.</p>`;}
+function settings(count){return `<div class="section-head"><h2>Sozlamalar va zaxira</h2></div>
+ <div class="card"><h3>Maxfiylik</h3><p>Akkaunt yo‘q. Hisoblar faqat shu qurilmadagi ilova xotirasida turadi. Serverga yuborilmaydi. Boshqa odam ilovani ochsa, uning hisobi noldan boshlanadi.</p><div class="warning">iPhone xotirasi tozalansa yoki ilova ma’lumotlari o‘chirilsa, hisob yo‘qolishi mumkin. Muntazam <b>zaxira nusxa</b> saqlang.</div></div>
+ <div class="card"><h3>Zaxira nusxa</h3><p>JSON faylni iPhone’ning Files dasturida saqlashingiz yoki boshqa telefoningizga ko‘chirishingiz mumkin. Zaxira faylni ommaga yubormang.</p><button class="big-btn" data-act="export">Zaxira nusxani yuklab olish</button><label class="big-btn secondary" style="display:flex;align-items:center;justify-content:center;cursor:pointer">Zaxiradan tiklash<input id="backupInput" type="file" accept=".json,application/json" hidden></label></div>
+ <div class="card"><h3>Ma’lumotlarni tozalash</h3><p>Jami ${fmt(count.total)} ta boshlang‘ich qazo, ${fmt(count.completed)} ta ado etilgan qazo qaydi mavjud.</p><button class="big-btn danger" data-act="reset">Barcha hisoblarni o‘chirish</button></div>`;}
+function render(){const count=evaluate(state);$('app').innerHTML=`<div class="arafa-bar"><a href="./" aria-label="Arafa zikr va duolar sahifasiga qaytish">← Arafa · Zikr va duolar</a><span>Shaxsiy hisob</span></div><header class="topbar"><div class="brand"><div class="emblem">☾</div><div><div class="eyebrow">Hanafiy · Qazo namozlari</div><strong>Qazo namozlarim hisobi</strong></div></div><span class="pill">☘ Akkauntsiz</span></header><main>${tab==='home'?home(count):tab==='manage'?manage(count):tab==='history'?history():settings(count)}</main><div class="status" role="status">${statusText}</div><nav class="nav" aria-label="Asosiy menyu">${[['home','⌂','Asosiy'],['manage','⊕','Hisob'],['history','◷','Tarix'],['settings','⚙','Sozlama']].map(([t,ico,label])=>`<button data-act="navigate" data-tab="${t}" class="${tab===t?'active':''}" ${tab===t?'aria-current="page"':''}><strong>${ico}</strong><span>${label}</span></button>`).join('')}</nav>`;}
+function ensureAction(type,keys,n){const count=evaluate(state);if(!Number.isSafeInteger(n)||n<=0||n>10000000){alert('1 dan 10 milliongacha butun son kiriting.');return;}
+  if(type==='done'&&keys.some(k=>count.remaining[k]<n)){alert('Tanlangan namoz uchun qazo qoldig‘i yetarli emas. Oldin hisobga qo‘shing.');return;}
+  if(n>=365&&type==='done'&&!confirm(`DIQQAT: ${keys.length} ta namoz turining HAR BIRIDAN ${fmt(n)} tadan qazo haqiqatan o‘qildimi?`))return;
+  if(n>=365&&type==='debt'&&!confirm(`Har bir tanlangan namoz turiga ${fmt(n)} tadan qazo qo‘shilsinmi?`))return;
+  record(type,Object.fromEntries(keys.map(k=>[k,n])));
+}
+document.addEventListener('click',e=>{
+ const b=e.target.closest('button[data-act],button[data-kind],button[data-year]');if(!b)return;
+ if(b.dataset.kind){kind=b.dataset.kind;statusText='';render();return;}
+ if(b.dataset.year){selected=$('choosePrayer')?.value||selected;years=b.dataset.year;statusText='';render();return;}
+ const act=b.dataset.act,p=b.dataset.prayer;
+ if(act==='navigate'){tab=b.dataset.tab;statusText='';render();window.scrollTo(0,0);}
+ if(act==='plus')ensureAction('done',[p],1);
+ if(act==='sub'){const c=evaluate(state);if(c.done[p]>0)record('done',{[p]:-1});}
+ if(act==='bulk'){selected=$('choosePrayer').value;const q=Number($('bulkQuantity').value);ensureAction(kind,selected==='all'?IDS:[selected],q);}
+ if(act==='ageEstimate'){
+   const from=Number($('ageFrom').value),to=Number($('ageTo').value),pct=Number($('missedPct').value);
+   if(!Number.isFinite(from)||!Number.isFinite(to)||!Number.isFinite(pct)||from<1||to>120||to<=from||pct<0||pct>100){alert('Yoshlar oralig‘i va 0–100% ulushni to‘g‘ri kiriting.');return;}
+   const number=Math.round((to-from)*365.2425*pct/100);
+   if(number<1){alert('Bu davr uchun qazo miqdori 0 ga teng.');return;}
+   if(confirm(`${from}–${to} yosh davri uchun 6 turdagi namozning har biriga ${fmt(number)} ta taxminiy qazo qo‘shilsinmi?`))record('debt',Object.fromEntries(IDS.map(id=>[id,number])),`${from}–${to} yosh · ${pct}%`);
+ }
+ if(act==='manual'){
+   const c=evaluate(state),delta={};let bad=false;
+   for(const p of PRAYERS){const v=Number($('set-'+p.id).value);if(!Number.isSafeInteger(v)||v<0||v>10000000||v<c.done[p.id]){bad=true;break;}const diff=v-c.debt[p.id];if(diff!==0)delta[p.id]=diff;}
+   if(bad){alert('Jami qazo o‘qilgan miqdordan kam bo‘lmasligi va musbat butun son bo‘lishi kerak.');return;}
+   if(Object.keys(delta).length===0){statusText='O‘zgarish yo‘q';render();return;}
+   if(confirm('Boshlang‘ich qazo miqdorlarini yangilaysizmi?'))record('debt',delta);
+ }
+ if(act==='undo'){if(state.actions.length&&confirm('Oxirgi amal bekor qilinsinmi?'))commit({...state,actions:state.actions.slice(0,-1)},'Oxirgi amal bekor qilindi');}
+ if(act==='export'){
+   const blob=new Blob([JSON.stringify({...state,exportedAt:new Date().toISOString()},null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`qazo-hisobim-${nowLocalDate()}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
+ }
+ if(act==='reset'){if(confirm('Rostdan ham HAMMA hisoblarni o‘chirmoqchimisiz?')&&confirm('Bu amaldan ortga qaytib bo‘lmaydi. Zaxira olganingizni tekshiring.'))commit(newState(),'Hisob tozalandi');}
+});
+document.addEventListener('change',async e=>{
+ if(e.target?.id==='choosePrayer'){selected=e.target.value;return;}
+ if(e.target?.id!=='backupInput')return;
+ const f=e.target.files?.[0];if(!f)return;
+ try{if(f.size>20000000)throw new Error('Fayl juda katta');const obj=JSON.parse(await f.text());if(!validate(obj))throw new Error('Zaxira fayl noto‘g‘ri yoki hisob izchil emas');
+ if(confirm('Hozirgi hisobingizni zaxira fayldagi hisob bilan ALMASHTIRASIZMI? Avval o‘zingiznikidan zaxira nusxa olish tavsiya qilinadi.'))commit({version:1,actions:obj.actions},'Zaxiradan tiklandi');
+ }catch(err){alert('Faylni o‘qib bo‘lmadi: '+err.message);}finally{e.target.value='';}
+});
+render();
+
+  </script>
+</body>
+</html>
