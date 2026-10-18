@@ -19,6 +19,7 @@
 
   
 .period-card{border:1px solid #dce8d9;background:#f8fbf6;border-radius:14px;padding:12px;margin:12px 0}.period-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.period-grid .field{margin:0}.period-pct{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0}.period-pct label{font-size:12px;font-weight:650;display:block;margin:0 0 5px}.period-pct input{width:100%;min-width:0;padding:10px;border:1px solid #cbd9cd;border-radius:9px;font-size:16px}.period-summary{font-size:12px;color:#476553;line-height:1.6;margin:8px 0 2px;white-space:pre-line}
+.simple-details{border:1px solid #dde5d9;border-radius:14px;background:#fff;padding:0 13px;margin:12px 0}.simple-details>summary{cursor:pointer;list-style:none;font-weight:700;font-size:14px;padding:17px 3px;color:#20483a}.simple-details>summary::-webkit-details-marker{display:none}.simple-details>summary:after{content:"⌄";float:right;color:#699078}.simple-details[open]>summary:after{content:"⌃"}.simple-details[open]>summary{border-bottom:1px solid #e4e9e4}.simple-details>.card{border:0;box-shadow:none;padding:12px 0;margin:0}.simple-details .simple-details{background:#f9fbf7}.simple-details .simple-details>summary{font-weight:600}
 </style>
 </head>
 <body>
@@ -108,21 +109,31 @@ function periodView(){
 }
 
 function manage(count){
-  return `<div class="section-head"><h2>Hisobni boshqarish</h2><span>Qo‘shish va belgilash</span></div>
-   <div class="card"><h3>Bir martada hisoblash</h3><p>1, 5, 10 yoki 20 yillik qazoni birdan hisobga qo‘shing yoki <b>haqiqatan o‘qilgan</b> qismini belgilang.</p>
+ return `<div class="section-head"><h2>Hisob</h2><span>Sodda boshqaruv</span></div>
+ <div class="card"><h3>Qazo namozlarim</h3><p>Qolgan: <b>${fmt(count.total-count.completed)} ta</b>. Har kuni o‘qiganingizni <b>Asosiy</b> oynasidagi + tugmasi bilan belgilang.</p>
+ <button class="big-btn secondary" data-act="navigate" data-tab="home">Namozlarni belgilash →</button></div>
+ <div class="card"><h3>Boshlang‘ich hisobni kiritish</h3><p>Avval qazo miqdorini kiriting. Sanalar bo‘yicha hisoblash yoki har bir namozning sonini qo‘lda belgilash mumkin.</p>
+ <details class="simple-details"><summary>Namoz tarixim — sanalar bo‘yicha hisoblash</summary>${periodView()}</details>
+ <details class="simple-details"><summary>Har bir namoz sonini qo‘lda kiritish</summary>
+   <div class="card"><h3>Har bir namoz bo‘yicha tuzatish</h3><p>Avval o‘qigan namozlaringizni hisobga olib, boshlang‘ich qarzdorlikni qo‘lda o‘zgartiring. Bu yerda <b>jami qazo</b> ko‘rsatiladi (qolgan emas).</p><div class="setup-grid">${PRAYERS.map(p=>`<div class="setup-field"><label for="set-${p.id}">${p.name}</label><input id="set-${p.id}" data-manual="${p.id}" type="number" inputmode="numeric" min="${count.done[p.id]}" max="10000000" value="${count.debt[p.id]}"></div>`).join('')}</div><button class="big-btn secondary" data-act="manual">Miqdorlarni saqlash</button></div>
+</details>
+ </div>
+ <details class="simple-details"><summary>Qo‘shimcha imkoniyatlar (5–10 yillik hisob va tuzatishlar)</summary>
+    <div class="card"><h3>Bir martada hisoblash</h3><p>1, 5, 10 yoki 20 yillik qazoni birdan hisobga qo‘shing yoki <b>haqiqatan o‘qilgan</b> qismini belgilang.</p>
    <div class="toggle"><button data-kind="debt" class="${kind==='debt'?'active':''}">Qazoni hisobga qo‘shish</button><button data-kind="done" class="${kind==='done'?'active':''}">O‘qilganini belgilash</button></div>
    <div class="field"><label>Namoz turi</label><select id="choosePrayer"><option value="all" ${selected==='all'?'selected':''}>Barcha 6 turdagi namoz</option>${PRAYERS.map(p=>`<option value="${p.id}" ${selected===p.id?'selected':''}>${p.name}</option>`).join('')}</select></div>
    <div class="field"><label>Tezkor muddat</label><div class="toggle">${['1','5','10','20','custom'].map(y=>`<button data-year="${y}" class="${years===y?'active':''}">${y==='custom'?'Boshqa':y+' yil'}</button>`).join('')}</div></div>
    <div class="field"><label>${years==='custom'?'Namoz miqdori (dona)':'Hisoblanadigan kunlar'}</label><input id="bulkQuantity" type="number" min="1" max="10000000" inputmode="numeric" value="${years==='custom'?'1':Number(years)*365}" ${years==='custom'?'':'readonly'}></div>
    <div class="warning">1 yil = 365 kun deb olingan <b>taxminiy hisob</b>. "O‘qilganini belgilash" faqat haqiqatda ado etilgan qazo uchun ishlatiladi.</div>
    <button class="big-btn" data-act="bulk">${kind==='debt'?'Hisobga qo‘shish':'Ado etilgan deb belgilash'}</button></div>
-   ${periodView()}
-   <div class="card"><h3>Yosh oralig‘i bo‘yicha taxmin</h3><p>Masalan, 12 yoshdan 18 yoshgacha namozlarning taxminan 80% i qoldirilgan bo‘lsa, shu davrni qo‘shing. Davrlarni o‘zingiz kiritasiz; bu diniy hukm emas.</p>
+
+ <details class="simple-details"><summary>Eski usul: yoshga qarab taxminlash</summary>   <div class="card"><h3>Yosh oralig‘i bo‘yicha taxmin</h3><p>Masalan, 12 yoshdan 18 yoshgacha namozlarning taxminan 80% i qoldirilgan bo‘lsa, shu davrni qo‘shing. Davrlarni o‘zingiz kiritasiz; bu diniy hukm emas.</p>
    <div class="form-grid"><div class="field"><label for="ageFrom">Necha yoshdan?</label><input type="number" id="ageFrom" min="1" max="120" value="12" inputmode="numeric"></div><div class="field"><label for="ageTo">Necha yoshgacha?</label><input type="number" id="ageTo" min="1" max="120" value="18" inputmode="numeric"></div></div>
    <div class="field"><label for="missedPct">Qoldirilgan ulush (0–100%)</label><input type="number" id="missedPct" min="0" max="100" value="100" inputmode="numeric"></div>
    <div class="warning">Hisob: yosh farqi × 365.2425 kun × qoldirilgan ulush. Har bir namoz turiga teng ulush qo‘shiladi. Ilgari o‘qilganlari yoki alohida namoz turlari farq qilsa, quyidagi qo‘lda tuzatishdan foydalaning.</div>
    <button class="big-btn" data-act="ageEstimate">Shu davr qazolarini qo‘shish</button></div>
-   <div class="card"><h3>Har bir namoz bo‘yicha tuzatish</h3><p>Avval o‘qigan namozlaringizni hisobga olib, boshlang‘ich qarzdorlikni qo‘lda o‘zgartiring. Bu yerda <b>jami qazo</b> ko‘rsatiladi (qolgan emas).</p><div class="setup-grid">${PRAYERS.map(p=>`<div class="setup-field"><label for="set-${p.id}">${p.name}</label><input id="set-${p.id}" data-manual="${p.id}" type="number" inputmode="numeric" min="${count.done[p.id]}" max="10000000" value="${count.debt[p.id]}"></div>`).join('')}</div><button class="big-btn secondary" data-act="manual">Miqdorlarni saqlash</button></div>`;
+</details>
+ </details>`;
 }
 function history(){const rows=[...state.actions].reverse();return `<div class="section-head"><h2>Harakatlar tarixi</h2><span>${fmt(rows.length)} ta yozuv</span></div><div class="card">${rows.length?rows.slice(0,150).map(a=>`<div class="history-row"><div><div class="history-title">${a.type==='debt'?'Hisobga qo‘shildi / tuzatildi':'O‘qildi / tuzatildi'} · ${actionName(a)}</div><div class="history-sub">${timeLabel(a.at)}</div></div><div class="amount ${a.type==='debt'?'add':'done'}">${sum(a.delta)>0?'+':''}${fmt(sum(a.delta))}</div></div>`).join(''):'<div class="muted">Hozircha yozuv yo‘q.</div>'}</div><button class="big-btn secondary" data-act="undo" ${!rows.length?'disabled':''}>Oxirgi amalni bekor qilish</button><p class="caption">Xato kiritilgan oxirgi amalga qaytishingiz mumkin. Boshqa amalni tuzatish uchun Hisob bo‘limidan foydalaning.</p>`;}
 function settings(count){return `<div class="section-head"><h2>Sozlamalar va zaxira</h2></div>
