@@ -121,7 +121,7 @@ function propose(){
   var days=daysBetween(from,to);
   if(days===null||Date.parse(to+"T00:00:00Z")>Date.now()){alert("To‘g‘ri sanalarni kiriting. Ikkinchi sana keyinroq va kelajakda bo‘lmasin.");return;}
   if(active==="namoz"){n=days;desc=from+" dan "+to+" gacha";}
-  else{alert("Ro‘za qazolarini aniq sanalar bilan hisoblash uchun Ramazon sanalari va haqiqiy tutilmagan kunlar kerak. Yil bo‘yicha taxminni tanlang yoki o‘zingizning aniq soningizni keyin kiriting.");return;}
+  else{n=Math.round(days/354.367*29.5);desc=from+" dan "+to+" gacha (taxminiy Ramazonlar)";}
  }
  if(n<=0){alert("Hisob natijasi nol.");return;}
  pending={kind:active,n:n};
