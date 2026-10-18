@@ -202,7 +202,6 @@ function ensureAction(type,keys,n){const count=evaluate(state);if(!Number.isSafe
 }
 function handleNamozAction(act,b){
  if(act==='missedMode'){missedMode=b.dataset.value;calcPreview=null;render();return true;}
- if(handleNamozAction(act,b))return;
  if(act==='calcRun'){
    if(calcType!=='namoz')return false;
    let days=null,from=null,to=null;
@@ -282,6 +281,7 @@ document.addEventListener('click',e=>{
    catch(e){alert('Ro‘za hisobini saqlashda xatolik yuz berdi.');}
    return;
  }
+ if(handleNamozAction(act,b))return;
  if(act==='calcRun'){
    let amount=0;
    if(calcMode==='year'){
