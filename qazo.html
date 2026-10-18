@@ -17,7 +17,9 @@
 /* Arafa bilan umumiy navigatsiya */
 .arafa-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:17px 0 0;font-size:12px;color:#9d875e}.arafa-bar a{color:#7a5e2b;text-decoration:none;font-weight:750;border-bottom:1px solid #e0d0ad;padding-bottom:3px}.arafa-bar span{color:#8c958b}.topbar{padding-top:18px}.topbar strong{font-size:clamp(16px,4.3vw,19px)}.emblem{background:#2c1a0e;color:#e8c97a}.hero{background:linear-gradient(125deg,#2c1a0e,#285b43)}.hero:after{color:rgba(232,201,122,.12)}.progress>div{background:#e8c97a}
 
-  </style>
+  
+.period-card{border:1px solid #dce8d9;background:#f8fbf6;border-radius:14px;padding:12px;margin:12px 0}.period-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.period-grid .field{margin:0}.period-pct{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0}.period-pct label{font-size:12px;font-weight:650;display:block;margin:0 0 5px}.period-pct input{width:100%;min-width:0;padding:10px;border:1px solid #cbd9cd;border-radius:9px;font-size:16px}.period-summary{font-size:12px;color:#476553;line-height:1.6;margin:8px 0 2px;white-space:pre-line}
+</style>
 </head>
 <body>
   <div id="app" class="app-shell"></div>
@@ -82,6 +84,29 @@ function home(count){
   <div class="section-head"><h2>Bugungi natija</h2></div><div class="mini-stats"><div class="card"><div class="caption">Bugun o‘qilgan</div><div class="metric">${fmt(recentToday())}</div></div><div class="card"><div class="caption">Jami ado etilgan</div><div class="metric">${fmt(count.completed)}</div></div></div>
   <button class="big-btn secondary" data-act="navigate" data-tab="manage">Yirik miqdorni belgilash →</button>`;
 }
+
+function periodActions(){return state.actions.filter(a=>a.type==='debt'&&typeof a.note==='string'&&/^DAVR\\|\\d{4}-\\d{2}-\\d{2}\\|\\d{4}-\\d{2}-\\d{2}\\|/.test(a.note));}
+function parseCalendarDate(s){
+ if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(s))return null;
+ const ms=Date.parse(s+'T00:00:00Z');if(!Number.isFinite(ms)||new Date(ms).toISOString().slice(0,10)!==s)return null;return ms;
+}
+function historyPeriods(){
+ const rows=periodActions().map(a=>{const parts=a.note.split('|');return {start:parts[1],end:parts[2],delta:a.delta};});
+ return rows.sort((a,b)=>a.start.localeCompare(b.start));
+}
+function periodView(){
+ const existing=historyPeriods();
+ return `<div class="card" id="namozTarixim"><h3>Namoz tarixim — sanalar bo‘yicha</h3>
+ <p>O‘qilgan va qoldirilgan davrlarni alohida kiriting. Har bir namoz turi uchun <b>qoldirilgan taxminiy foizni</b> belgilang. Qazo bo‘lmagan namozga 0%, to‘liq qoldirilganiga 100% kiriting.</p>
+ <div class="period-grid"><div class="field"><label for="periodStart">Boshlanish sanasi</label><input type="date" id="periodStart" min="1900-01-01"></div><div class="field"><label for="periodEnd">Tugash sanasi (shu kun ham kiradi)</label><input type="date" id="periodEnd" min="1900-01-01"></div></div>
+ <div class="period-pct">${PRAYERS.map(p=>`<div><label for="period-${p.id}">${p.name} — qoldirilgan %</label><input type="number" id="period-${p.id}" value="100" min="0" max="100" step="1" inputmode="numeric"></div>`).join('')}</div>
+ <div class="warning">Sanalar haqiqiy kunlar bo‘yicha, kabisa yillari bilan hisoblanadi. Davrlar bir-birini qamrab olmasligi kerak. Bu taxmin — shariatdagi aniq qarzdorlik hukmi emas. Bir davrni oldin yosh bo‘yicha yoki yillik tezkor hisob orqali qo‘shgan bo‘lsangiz, qayta qo‘shmang.</div>
+ <button class="big-btn" data-act="addPeriod">Shu davr hisobini qo‘shish</button>
+ <div class="section-head"><h2>Kiritilgan davrlar</h2><span>${existing.length} ta</span></div>
+ ${existing.length?existing.map(p=>`<div class="period-card"><b>${p.start} — ${p.end}</b><div class="period-summary">${PRAYERS.map(z=>z.name+': '+fmt(p.delta[z.id]||0)+' ta').join(' · ')}</div></div>`).join(''):'<p>Hali sana bo‘yicha davr qo‘shilmagan.</p>'}
+ <p class="caption">Xatoni tuzatish uchun “Tarix” bo‘limidagi oxirgi amalni bekor qiling yoki “Hisob” bo‘limida jami sonlarni qo‘lda to‘g‘rilang.</p></div>`;
+}
+
 function manage(count){
   return `<div class="section-head"><h2>Hisobni boshqarish</h2><span>Qo‘shish va belgilash</span></div>
    <div class="card"><h3>Bir martada hisoblash</h3><p>1, 5, 10 yoki 20 yillik qazoni birdan hisobga qo‘shing yoki <b>haqiqatan o‘qilgan</b> qismini belgilang.</p>
@@ -91,6 +116,7 @@ function manage(count){
    <div class="field"><label>${years==='custom'?'Namoz miqdori (dona)':'Hisoblanadigan kunlar'}</label><input id="bulkQuantity" type="number" min="1" max="10000000" inputmode="numeric" value="${years==='custom'?'1':Number(years)*365}" ${years==='custom'?'':'readonly'}></div>
    <div class="warning">1 yil = 365 kun deb olingan <b>taxminiy hisob</b>. "O‘qilganini belgilash" faqat haqiqatda ado etilgan qazo uchun ishlatiladi.</div>
    <button class="big-btn" data-act="bulk">${kind==='debt'?'Hisobga qo‘shish':'Ado etilgan deb belgilash'}</button></div>
+   ${periodView()}
    <div class="card"><h3>Yosh oralig‘i bo‘yicha taxmin</h3><p>Masalan, 12 yoshdan 18 yoshgacha namozlarning taxminan 80% i qoldirilgan bo‘lsa, shu davrni qo‘shing. Davrlarni o‘zingiz kiritasiz; bu diniy hukm emas.</p>
    <div class="form-grid"><div class="field"><label for="ageFrom">Necha yoshdan?</label><input type="number" id="ageFrom" min="1" max="120" value="12" inputmode="numeric"></div><div class="field"><label for="ageTo">Necha yoshgacha?</label><input type="number" id="ageTo" min="1" max="120" value="18" inputmode="numeric"></div></div>
    <div class="field"><label for="missedPct">Qoldirilgan ulush (0–100%)</label><input type="number" id="missedPct" min="0" max="100" value="100" inputmode="numeric"></div>
@@ -119,6 +145,16 @@ document.addEventListener('click',e=>{
  if(act==='plus')ensureAction('done',[p],1);
  if(act==='sub'){const c=evaluate(state);if(c.done[p]>0)record('done',{[p]:-1});}
  if(act==='bulk'){selected=$('choosePrayer').value;const q=Number($('bulkQuantity').value);ensureAction(kind,selected==='all'?IDS:[selected],q);}
+ if(act==='addPeriod'){
+   const start=$('periodStart').value,end=$('periodEnd').value;
+   const a=parseCalendarDate(start),b=parseCalendarDate(end);
+   if(a===null||b===null||b<a||b>Date.now()||((b-a)/86400000)>36525){alert('To‘g‘ri, o‘tib ketgan sanalar oralig‘ini kiriting (100 yildan oshmasin).');return;}
+   if(historyPeriods().some(p=>!(end<p.start||start>p.end))){alert('Bu davr oldin hisoblangan sana bilan kesishadi. Bir davrni qayta qo‘shmang.');return;}
+   const days=Math.round((b-a)/86400000)+1,delta={};
+   for(const p of PRAYERS){const n=Number($('period-'+p.id).value);if(!Number.isSafeInteger(n)||n<0||n>100){alert('Har bir namoz uchun 0 dan 100 gacha butun foiz yozing.');return;}const estimate=Math.round(days*n/100);if(estimate>0)delta[p.id]=estimate;}
+   if(Object.keys(delta).length===0){alert('Barcha foizlar 0: qo‘shiladigan qazo yo‘q.');return;}
+   if(confirm(start+' dan '+end+' gacha ('+days+' kun) bo‘yicha taxminiy qazolarni hisobga qo‘shasizmi?'))record('debt',delta,'DAVR|'+start+'|'+end+'|'+days+' kun');
+ }
  if(act==='ageEstimate'){
    const from=Number($('ageFrom').value),to=Number($('ageTo').value),pct=Number($('missedPct').value);
    if(!Number.isFinite(from)||!Number.isFinite(to)||!Number.isFinite(pct)||from<1||to>120||to<=from||pct<0||pct>100){alert('Yoshlar oralig‘i va 0–100% ulushni to‘g‘ri kiriting.');return;}
