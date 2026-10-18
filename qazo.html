@@ -28,6 +28,13 @@
 .roza-plan h3{font-size:16px}.roza-plan-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.roza-plan-card{background:#f1f7f5;border:1px solid #c9ded3;border-radius:13px;padding:13px 9px}.roza-plan-card strong{display:block;font-size:12px;min-height:31px}.roza-plan-number{font-weight:800;color:#246a50;font-size:16px;min-height:47px;margin-top:9px}.roza-plan-card small{font-size:11px;color:#657c6e}
 @media(max-width:430px){.roza-year-grid{grid-template-columns:1fr}.roza-plan-grid{grid-template-columns:1fr}.roza-plan-card{display:grid;grid-template-columns:1fr 1fr;align-items:center}.roza-plan-card strong,.roza-plan-number{min-height:0;margin:0}.roza-plan-card small{grid-column:2}}
 .roza-dashboard{margin-top:18px}.roza-dashboard-head{display:flex;justify-content:space-between;align-items:center;gap:8px}.roza-dashboard-head h3{font-size:17px;margin:0}.roza-dashboard-head span{font-size:12px;color:#7b8c7f}.roza-dashboard-total{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;margin:14px 0 5px}.roza-dashboard-total strong{font-size:28px;color:#245a46}.roza-dashboard-total small{color:#728477}.roza-dashboard .roza-plan{margin-top:16px}.roza-dashboard .roza-plan-grid{gap:8px}.roza-dashboard .roza-plan-card{padding:10px}.roza-dashboard .roza-plan h3{font-size:14px}
+.topbar{justify-content:flex-start;padding-top:15px;padding-bottom:18px}.topbar strong{font-size:clamp(19px,5vw,23px);letter-spacing:-.6px}.arafa-bar{justify-content:flex-start}
+.prayer-list{display:flex;flex-direction:column;gap:9px}.prayer-row{background:#fff;border:1px solid var(--line);border-radius:15px;overflow:hidden}.prayer-row.opened{border-color:#99bea9;box-shadow:0 1px 9px rgba(17,69,48,.06)}
+.prayer-select{width:100%;display:flex;align-items:center;gap:12px;text-align:left;border:0;background:transparent;padding:14px 16px;color:var(--ink);min-height:67px}.prayer-select:focus-visible,.prayer-confirm-buttons button:focus-visible{outline:3px solid #77ac91;outline-offset:2px}.prayer-select:disabled{opacity:.6}
+.prayer-label{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}.prayer-label strong{font-size:15px}.prayer-label small{font-size:11px;color:var(--muted)}
+.prayer-remaining{display:flex;align-items:baseline;gap:5px;white-space:nowrap}.prayer-remaining strong{font-size:19px;font-weight:780;font-variant-numeric:tabular-nums}.prayer-remaining small{font-size:11px;color:var(--muted)}.prayer-chevron{font-size:23px;line-height:1;color:#8b9d91;margin-left:3px;width:15px}
+.prayer-confirm{padding:14px 16px 16px;border-top:1px solid #dfebe2;background:#f5faf6}.prayer-confirm p{margin:0 0 13px;font-size:13px;line-height:1.5;color:#2e4d3c}.prayer-confirm-buttons{display:flex;gap:10px}.prayer-confirm-buttons button{flex:1;min-height:44px;border-radius:10px;border:1px solid #d1e0d5;font-size:13px;font-weight:700;padding:9px}.prayer-cancel{background:#fff;color:#315342}.prayer-approve{background:#205a45;color:white;border-color:#205a45!important}
+@media(min-width:600px){.prayer-list{display:flex;flex-direction:column}}
 </style>
 </head>
 <body>
@@ -94,13 +101,28 @@ function rozaDashboard(){
  ${remaining>0?rozaPlans(remaining):'<p class="caption">Barcha qazo ro‘zalar ado etilgan deb belgilangan.</p>'}
  <button class="big-btn secondary" data-act="goRoza">Ro‘za hisobini boshqarish →</button></div>`;
 }
+let selectedPrayer=null;
 function home(count){
-  return `${hero(count)}${count.total===0?'<div class="warning">Boshlash uchun <b>Hisob</b> bo‘limida dastlabki qazo miqdorini kiriting. 12–39 yoshning hammasini avtomatik qazo deb olmang.</div>':''}
-  <div class="section-head"><h2>Namozlar</h2><span>+1 o‘qildi / −1 bekor</span></div>
-  <div class="prayer-list">${PRAYERS.map(p=>`<article class="prayer"><div class="prayer-top"><div><div class="prayer-name">${p.name}</div><div class="prayer-rakat">${p.rakat} rakat</div></div><span style="color:#b5aa7f">✦</span></div><div class="prayer-count">${fmt(count.remaining[p.id])} <span>qoldi</span></div><div class="btn-row"><button class="circle-btn" aria-label="${p.name} oxirgi belgilangan bittani bekor qilish" data-act="sub" data-prayer="${p.id}" ${count.done[p.id]===0?'disabled':''}>−</button><span class="done-count">${fmt(count.done[p.id])} o‘qilgan</span><button class="circle-btn plus" aria-label="${p.name}dan bittasi o‘qildi" data-act="plus" data-prayer="${p.id}" ${count.remaining[p.id]===0?'disabled':''}>+</button></div></article>`).join('')}</div>
-  <div class="section-head"><h2>Bugungi natija</h2></div><div class="mini-stats"><div class="card"><div class="caption">Bugun o‘qilgan</div><div class="metric">${fmt(recentToday())}</div></div><div class="card"><div class="caption">Jami ado etilgan</div><div class="metric">${fmt(count.completed)}</div></div></div>
-  ${rozaDashboard()}
-  <button class="big-btn secondary" data-act="navigate" data-tab="manage">Qazoni hisoblash →</button>`;
+return `${hero(count)}${count.total===0?'<div class="warning">Boshlash uchun Hisob bo‘limida qazo namozlar miqdorini kiriting.</div>':''}
+<div class="section-head"><h2>Namozlar</h2><span>O‘qilganini belgilash</span></div>
+<div class="prayer-list">${PRAYERS.map(p=>{
+  const remaining=count.remaining[p.id],open=selectedPrayer===p.id;
+  return `<div class="prayer-row${open?' opened':''}">
+    <button type="button" class="prayer-select" data-act="selectPrayer" data-prayer="${p.id}" aria-expanded="${open}" aria-controls="prayer-detail-${p.id}" ${remaining===0?'disabled':''}>
+      <span class="prayer-label"><strong>${p.name}</strong><small>${fmt(count.done[p.id])} o‘qilgan</small></span>
+      <span class="prayer-remaining"><strong>${fmt(remaining)}</strong><small>qoldi</small></span>
+      <span class="prayer-chevron" aria-hidden="true">${open?'⌄':'›'}</span>
+    </button>
+    ${open?`<div class="prayer-confirm" id="prayer-detail-${p.id}" role="group" aria-label="${p.name} tasdiqlash">
+      <p>1 ta <strong>${p.name}</strong> qazosi o‘qildi deb belgilaysizmi?</p>
+      <div class="prayer-confirm-buttons"><button type="button" class="prayer-cancel" data-act="cancelPrayer">Bekor qilish</button><button type="button" class="prayer-approve" data-act="confirmPrayer" data-prayer="${p.id}">Ha, o‘qildi</button></div>
+    </div>`:''}
+  </div>`;
+}).join('')}</div>
+<div class="section-head"><h2>Bugungi natija</h2></div>
+<div class="mini-stats"><div class="card"><div class="caption">Bugun o‘qilgan</div><div class="metric">${fmt(recentToday())}</div></div><div class="card"><div class="caption">Jami ado etilgan</div><div class="metric">${fmt(count.completed)}</div></div></div>
+${rozaDashboard()}
+<button class="big-btn secondary" data-act="navigate" data-tab="manage">Qazoni hisoblash →</button>`;
 }
 
 function periodActions(){return state.actions.filter(a=>a.type==='debt'&&typeof a.note==='string'&&/^DAVR\|\d{4}-\d{2}-\d{2}\|\d{4}-\d{2}-\d{2}\|/.test(a.note));}
@@ -191,7 +213,7 @@ function settings(count){return `<div class="section-head"><h2>Sozlamalar va zax
  <div class="card"><h3>Maxfiylik</h3><p>Akkaunt yo‘q. Hisoblar faqat shu qurilmadagi ilova xotirasida turadi. Serverga yuborilmaydi. Boshqa odam ilovani ochsa, uning hisobi noldan boshlanadi.</p><div class="warning">iPhone xotirasi tozalansa yoki ilova ma’lumotlari o‘chirilsa, hisob yo‘qolishi mumkin. Muntazam <b>zaxira nusxa</b> saqlang.</div></div>
  <div class="card"><h3>Zaxira nusxa</h3><p>JSON faylni iPhone’ning Files dasturida saqlashingiz yoki boshqa telefoningizga ko‘chirishingiz mumkin. Zaxira faylni ommaga yubormang.</p><button class="big-btn" data-act="export">Zaxira nusxani yuklab olish</button><label class="big-btn secondary" style="display:flex;align-items:center;justify-content:center;cursor:pointer">Zaxiradan tiklash<input id="backupInput" type="file" accept=".json,application/json" hidden></label></div>
  <div class="card"><h3>Ma’lumotlarni tozalash</h3><p>Jami ${fmt(count.total)} ta boshlang‘ich qazo, ${fmt(count.completed)} ta ado etilgan qazo qaydi mavjud.</p><button class="big-btn danger" data-act="reset">Barcha hisoblarni o‘chirish</button></div>`;}
-function render(){const count=evaluate(state);$('app').innerHTML=`<div class="arafa-bar"><a href="./" aria-label="Arafa zikr va duolar sahifasiga qaytish">← Arafa · Zikr va duolar</a><span>Shaxsiy hisob</span></div><header class="topbar"><div class="brand"><div class="emblem">☾</div><div><div class="eyebrow">Hanafiy · Qazo namozlari</div><strong>Qazo namozlarim hisobi</strong></div></div><span class="pill">☘ Akkauntsiz</span></header><main>${tab==='home'?home(count):tab==='manage'?manage(count):tab==='history'?history():settings(count)}</main><div class="status" role="status">${statusText}</div><nav class="nav" aria-label="Asosiy menyu">${[['home','⌂','Asosiy'],['manage','⊕','Hisob'],['history','◷','Tarix'],['settings','⚙','Sozlama']].map(([t,ico,label])=>`<button data-act="navigate" data-tab="${t}" class="${tab===t?'active':''}" ${tab===t?'aria-current="page"':''}><strong>${ico}</strong><span>${label}</span></button>`).join('')}</nav>`;}
+function render(){const count=evaluate(state);$('app').innerHTML=`<div class="arafa-bar"><a href="./" aria-label="Arafa zikr va duolar sahifasiga qaytish">← Arafa · Zikr va duolar</a></div><header class="topbar"><div class="brand"><strong>Qazo namozlarim hisobi</strong></div></header><main>${tab==='home'?home(count):tab==='manage'?manage(count):tab==='history'?history():settings(count)}</main><div class="status" role="status">${statusText}</div><nav class="nav" aria-label="Asosiy menyu">${[['home','⌂','Asosiy'],['manage','⊕','Hisob'],['history','◷','Tarix'],['settings','⚙','Sozlama']].map(([t,ico,label])=>`<button data-act="navigate" data-tab="${t}" class="${tab===t?'active':''}" ${tab===t?'aria-current="page"':''}><strong>${ico}</strong><span>${label}</span></button>`).join('')}</nav>`;}
 function ensureAction(type,keys,n){const count=evaluate(state);if(!Number.isSafeInteger(n)||n<=0||n>10000000){alert('1 dan 10 milliongacha butun son kiriting.');return;}
   if(type==='done'&&keys.some(k=>count.remaining[k]<n)){alert('Tanlangan namoz uchun qazo qoldig‘i yetarli emas. Oldin hisobga qo‘shing.');return;}
   if(n>=365&&type==='done'&&!confirm(`DIQQAT: ${keys.length} ta namoz turining HAR BIRIDAN ${fmt(n)} tadan qazo haqiqatan o‘qildimi?`))return;
@@ -203,7 +225,17 @@ document.addEventListener('click',e=>{
  if(b.dataset.kind){kind=b.dataset.kind;statusText='';render();return;}
  if(b.dataset.year){selected=$('choosePrayer')?.value||selected;years=b.dataset.year;statusText='';render();return;}
  const act=b.dataset.act,p=b.dataset.prayer;
- if(act==='navigate'){tab=b.dataset.tab;statusText='';render();window.scrollTo(0,0);}
+ if(act==='navigate'){selectedPrayer=null;tab=b.dataset.tab;statusText='';render();window.scrollTo(0,0);return;}
+ if(act==='selectPrayer'){
+   if(tab!=='home'||!PRAYERS.some(x=>x.id===p)||evaluate(state).remaining[p]<=0)return;
+   selectedPrayer=selectedPrayer===p?null:p;statusText='';render();return;
+ }
+ if(act==='cancelPrayer'){selectedPrayer=null;render();return;}
+ if(act==='confirmPrayer'){
+   if(tab!=='home'||selectedPrayer!==p||!PRAYERS.some(x=>x.id===p))return;
+   if(evaluate(state).remaining[p]<=0){selectedPrayer=null;render();return;}
+   selectedPrayer=null;ensureAction('done',[p],1);return;
+ }
  if(act==='goRoza'){tab='manage';calcType='roza';calcPreview=null;render();window.scrollTo(0,0);return;}
  if(act==='calcType'){calcType=b.dataset.value;calcPreview=null;render();return;}
  if(act==='calcMode'){calcMode=b.dataset.value;calcPreview=null;render();return;}
@@ -259,8 +291,6 @@ document.addEventListener('click',e=>{
    try{localStorage.setItem(ROZA_KEY,JSON.stringify(next));roza=next;statusText='Saqlandi';render();}catch(e){alert('Saqlash amalga oshmadi.')}
    return;
  }
- if(act==='plus')ensureAction('done',[p],1);
- if(act==='sub'){const c=evaluate(state);if(c.done[p]>0)record('done',{[p]:-1});}
  if(act==='bulk'){selected=$('choosePrayer').value;const q=Number($('bulkQuantity').value);ensureAction(kind,selected==='all'?IDS:[selected],q);}
  if(act==='addPeriod'){
    const start=$('periodStart').value,end=$('periodEnd').value;
