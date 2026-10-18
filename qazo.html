@@ -21,6 +21,12 @@
 .period-card{border:1px solid #dce8d9;background:#f8fbf6;border-radius:14px;padding:12px;margin:12px 0}.period-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.period-grid .field{margin:0}.period-pct{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0}.period-pct label{font-size:12px;font-weight:650;display:block;margin:0 0 5px}.period-pct input{width:100%;min-width:0;padding:10px;border:1px solid #cbd9cd;border-radius:9px;font-size:16px}.period-summary{font-size:12px;color:#476553;line-height:1.6;margin:8px 0 2px;white-space:pre-line}
 .simple-details{border:1px solid #dde5d9;border-radius:14px;background:#fff;padding:0 13px;margin:12px 0}.simple-details>summary{cursor:pointer;list-style:none;font-weight:700;font-size:14px;padding:17px 3px;color:#20483a}.simple-details>summary::-webkit-details-marker{display:none}.simple-details>summary:after{content:"⌄";float:right;color:#699078}.simple-details[open]>summary:after{content:"⌃"}.simple-details[open]>summary{border-bottom:1px solid #e4e9e4}.simple-details>.card{border:0;box-shadow:none;padding:12px 0;margin:0}.simple-details .simple-details{background:#f9fbf7}.simple-details .simple-details>summary{font-weight:600}
 .calc-choose{display:grid;grid-template-columns:1fr 1fr;gap:10px}.calc-choose button{border:1px solid #e1dccd;border-radius:16px;background:#fff;padding:20px 8px;cursor:pointer;font-size:26px}.calc-choose button b{display:block;font-size:17px;color:#2c4739}.calc-choose button small{display:block;font-size:12px;color:#718275;margin-top:3px}.calc-choose button.chosen{border:2px solid #2e7053;background:#f1f8f2;padding:19px 7px}.calc-toggle{display:grid;grid-template-columns:1fr 1fr;gap:5px;background:#f1f3ee;border-radius:12px;padding:5px}.calc-toggle button{border:0;background:transparent;border-radius:9px;padding:12px;color:#52685a}.calc-toggle button.chosen{background:#fff;font-weight:750;color:#21583e}.calc-result{margin-top:16px;padding:16px;border:1px solid #dce9dd;border-radius:13px;background:#f5faf4}.calc-result b{font-size:21px}.calc-result p{margin-top:10px;color:#637469;font-size:13px}.calc-roza-actions{display:flex;gap:16px;align-items:center;justify-content:center}.calc-roza-actions button{border:0;background:#246548;color:white;border-radius:10px;font-size:24px;width:46px;height:40px}.calc-roza-actions button:disabled{opacity:.35}
+
+.roza-year-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.roza-year-grid .field{margin-top:14px}.roza-result{padding:23px}
+.roza-big{text-align:center;padding:8px 0 23px;border-bottom:1px solid #e1e9e0}.roza-name{color:#23694e;font-weight:800;font-size:17px;margin:8px 0 14px}.roza-big span{display:block;color:#75837b;font-size:13px;letter-spacing:1px}.roza-big strong{display:block;font-size:clamp(58px,15vw,83px);color:#23684b;line-height:1.3}.roza-big b{font-size:15px}
+.roza-detail{margin:24px 0}.roza-detail>div{display:flex;justify-content:space-between;gap:8px;padding:13px 0;border-bottom:1px dashed #dce6de}.roza-detail span{color:#76867b;font-size:13px}.roza-detail strong{font-size:14px;text-align:right}
+.roza-plan h3{font-size:16px}.roza-plan-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.roza-plan-card{background:#f1f7f5;border:1px solid #c9ded3;border-radius:13px;padding:13px 9px}.roza-plan-card strong{display:block;font-size:12px;min-height:31px}.roza-plan-number{font-weight:800;color:#246a50;font-size:16px;min-height:47px;margin-top:9px}.roza-plan-card small{font-size:11px;color:#657c6e}
+@media(max-width:430px){.roza-year-grid{grid-template-columns:1fr}.roza-plan-grid{grid-template-columns:1fr}.roza-plan-card{display:grid;grid-template-columns:1fr 1fr;align-items:center}.roza-plan-card strong,.roza-plan-number{min-height:0;margin:0}.roza-plan-card small{grid-column:2}}
 </style>
 </head>
 <body>
@@ -113,8 +119,44 @@ let calcType='namoz',calcMode='year',calcPreview=null;
 const ROZA_KEY='arafa_roza_v1';
 function readRoza(){try{const x=JSON.parse(localStorage.getItem(ROZA_KEY));if(x&&Number.isSafeInteger(x.debt)&&Number.isSafeInteger(x.done)&&x.debt>=x.done&&x.done>=0)return x;}catch(e){}return {debt:0,done:0};}
 let roza=readRoza();
+let rozaDraft={name:typeof roza.name==='string'?roza.name:'',startYear:roza.startYear||'',endYear:roza.endYear||''};
 function calcDays(a,b){const x=Date.parse(a+'T00:00:00Z'),y=Date.parse(b+'T00:00:00Z');if(!Number.isFinite(x)||!Number.isFinite(y)||new Date(x).toISOString().slice(0,10)!==a||new Date(y).toISOString().slice(0,10)!==b||y<=x||y>Date.now())return null;return Math.round((y-x)/86400000);}
+function safeHTML(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function rozaDuration(days){
+ if(days<=0)return "Tugallangan";
+ const years=Math.floor(days/365),afterYears=days-years*365,months=Math.floor(afterYears/30),rest=afterYears-months*30;
+ return [years?years+" yil":"",months?months+" oy":"",rest?rest+" kun":""].filter(Boolean).join(" ");
+}
+function rozaPlans(remaining){
+ const entries=[["Har kuni",remaining],["Haftasiga 3 kun",Math.ceil(remaining/3)*7],["Dushanba va payshanba",Math.ceil(remaining/2)*7]];
+ return `<div class="roza-plan"><h3>Qancha vaqtda tugatasiz?</h3><div class="roza-plan-grid">${entries.map(([label,days])=>`<div class="roza-plan-card"><strong>${label}</strong><div class="roza-plan-number">${rozaDuration(days)}</div><small>≈ ${fmt(days)} kun ichida</small></div>`).join('')}</div><p class="caption">Muddatlar taxminiy. Ro‘za tutish mumkin bo‘lmagan kunlar va tanaffuslar hisobga olinmagan.</p></div>`;
+}
+function rozaManage(){
+ const latest=calcPreview&&calcPreview.type==='roza'?calcPreview:null;
+ const saved=!latest&&Number.isSafeInteger(roza.startYear)&&Number.isSafeInteger(roza.endYear)&&roza.endYear>=roza.startYear?{amount:roza.debt,startYear:roza.startYear,endYear:roza.endYear,name:roza.name||''}:null;
+ const result=latest||saved;
+ const tabs=`<div class="section-head"><h2>Qazoni hisoblash</h2><span>Hanafiy mazhabi</span></div><div class="calc-choose"><button data-act="calcType" data-value="namoz">🕌<b>Namoz</b><small>Qazo namozlar</small></button><button class="chosen" data-act="calcType" data-value="roza">🌙<b>Ro‘za</b><small>Qazo ro‘zalar</small></button></div>`;
+ return `${tabs}
+ <div class="card">
+ <h3>Qazo ro‘zalarni hisoblash</h3>
+ <div class="field"><label for="rozaName">Ismingiz (ixtiyoriy)</label><input id="rozaName" type="text" maxlength="50" autocomplete="name" placeholder="Ismingiz" value="${safeHTML(rozaDraft.name)}"></div>
+ <div class="roza-year-grid"><div class="field"><label for="rozaStartYear">Balog‘atga yetgan yilingiz</label><input id="rozaStartYear" type="number" inputmode="numeric" min="1900" max="2100" step="1" placeholder="Masalan, 2018" value="${safeHTML(rozaDraft.startYear)}"></div>
+ <div class="field"><label for="rozaEndYear">Ro‘za tutmagan oxirgi yil</label><input id="rozaEndYear" type="number" inputmode="numeric" min="1900" max="2100" step="1" placeholder="Masalan, 2026" value="${safeHTML(rozaDraft.endYear)}"></div></div>
+ <p class="caption">Boshlanish va tugash yillari ham hisobga kiradi. Masalan, 2018–2026 = 9 ta Ramazon.</p>
+ <button class="big-btn" data-act="rozaRun">Qazo ro‘zani hisoblash →</button>
+ </div>
+ ${result?`<div class="card roza-result">
+ <div class="roza-big"><div class="roza-name">${result.name?safeHTML(result.name):'Qazo ro‘za hisobingiz'}</div><span>JAMI QAZO RO‘ZA</span><strong>${fmt(result.amount)}</strong><b>KUN RO‘ZA</b></div>
+ <div class="roza-detail"><div><span>Davr</span><strong>${result.startYear} — ${result.endYear}</strong></div><div><span>Ramazon oylari</span><strong>${fmt(result.endYear-result.startYear+1)} ta</strong></div><div><span>Hisob</span><strong>${fmt(result.endYear-result.startYear+1)} × 30 = ${fmt(result.amount)} kun</strong></div></div>
+ ${rozaPlans(Math.max(0,result.amount-roza.done))}
+ <div class="warn">Har bir Ramazon <b>30 kun</b> deb olingan taxminiy hisob. Asl Ramazon 29 yoki 30 kun bo‘ladi. Bu natija barcha Ramazon kunlari tutilmagan deb hisoblaydi; ilgari tutilgan kunlarni inobatga oling.</div>
+ ${latest?'<button class="big-btn" data-act="rozaSave">Natijani hisobimga saqlash</button>':'<p class="caption">Bu hisob telefoningizda saqlangan.</p>'}
+ </div>`:''}
+ <div class="card"><h3>Ro‘za hisobim</h3><p>Jami: ${fmt(roza.debt)} · Tutilgan: ${fmt(roza.done)} · Qolgan: <b>${fmt(roza.debt-roza.done)} kun</b></p>
+ <div class="calc-roza-actions"><button data-act="rozaMinus" aria-label="Ro‘zani bekor qilish" ${roza.done===0?'disabled':''}>−</button><b>${fmt(roza.done)} tutilgan</b><button data-act="rozaPlus" aria-label="Tutilgan ro‘zani belgilash" ${roza.done===roza.debt?'disabled':''}>+</button></div></div>`;
+}
 function manage(count){
+ if(calcType==='roza')return rozaManage();
  return `<div class="section-head"><h2>Qazoni hisoblash</h2><span>Hanafiy mazhabi</span></div>
  <div class="calc-choose"><button class="${calcType==='namoz'?'chosen':''}" data-act="calcType" data-value="namoz">🕌<b>Namoz</b><small>Qazo namozlar</small></button><button class="${calcType==='roza'?'chosen':''}" data-act="calcType" data-value="roza">🌙<b>Ro‘za</b><small>Qazo ro‘zalar</small></button></div>
  <div class="card"><div class="calc-toggle"><button class="${calcMode==='year'?'chosen':''}" data-act="calcMode" data-value="year">Yil bo‘yicha</button><button class="${calcMode==='date'?'chosen':''}" data-act="calcMode" data-value="date">Sana bo‘yicha</button></div>
@@ -145,6 +187,27 @@ document.addEventListener('click',e=>{
  if(act==='navigate'){tab=b.dataset.tab;statusText='';render();window.scrollTo(0,0);}
  if(act==='calcType'){calcType=b.dataset.value;calcPreview=null;render();return;}
  if(act==='calcMode'){calcMode=b.dataset.value;calcPreview=null;render();return;}
+
+ if(act==='rozaRun'){
+   const n=$('rozaName').value.trim().slice(0,50),startText=$('rozaStartYear').value.trim(),endText=$('rozaEndYear').value.trim();
+   const start=Number(startText),end=Number(endText),current=new Date().getFullYear();
+   if(!/^\d{4}$/.test(startText)||!/^\d{4}$/.test(endText)||!Number.isSafeInteger(start)||!Number.isSafeInteger(end)||start<1900||end>current||start>end||end-start>100){
+     alert('Yillarni to‘g‘ri kiriting: balog‘at yili oxirgi yilga teng yoki undan oldin bo‘lishi kerak.');return;
+   }
+   rozaDraft={name:n,startYear:start,endYear:end};
+   calcPreview={type:'roza',mode:'years',amount:(end-start+1)*30,name:n,startYear:start,endYear:end};
+   render();return;
+ }
+ if(act==='rozaSave'){
+   if(!calcPreview||calcPreview.type!=='roza')return;
+   const v=calcPreview;
+   if(v.amount<roza.done){alert('Yangi jami qazo ilgari tutilgan ro‘za sonidan kam.');return;}
+   if(!confirm('Hisobdagi jami ro‘za soni '+fmt(v.amount)+' kunga almashtirilsinmi? Oldin belgilangan tutilgan ro‘zalar saqlanadi.'))return;
+   const next={...roza,debt:v.amount,name:v.name,startYear:v.startYear,endYear:v.endYear};
+   try{localStorage.setItem(ROZA_KEY,JSON.stringify(next));roza=next;calcPreview=null;statusText='Ro‘za hisobi saqlandi';render();}
+   catch(e){alert('Ro‘za hisobini saqlashda xatolik yuz berdi.');}
+   return;
+ }
  if(act==='calcRun'){
    let amount=0;
    if(calcMode==='year'){
