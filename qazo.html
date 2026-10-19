@@ -51,6 +51,13 @@
 .roza-dash-actions button{min-height:46px;border-radius:10px;font-size:13px;font-weight:750;border:1px solid #d1e0d5}
 .roza-undo-btn{display:block;background:none;border:none;color:#73877b;font-size:12px;text-decoration:underline;margin:14px auto 1px;padding:8px}
 @media(max-width:390px){.roza-dash-number{font-size:49px}.topbar strong{font-size:18px}}
+.brand-text{display:flex;flex-direction:column;gap:5px;min-width:0}.brand-text strong{line-height:1.2}
+.owner-display{font-size:13px;color:#527263;font-weight:650;overflow-wrap:anywhere}
+.owner-input-row{display:flex;gap:8px;align-items:stretch;margin-top:12px}
+.owner-input-row input{height:46px;flex:1;min-width:0;border:1px solid #cddad0;background:#fff;border-radius:11px;padding:0 12px;font-size:16px}
+.owner-input-row button{min-width:86px;border:0;border-radius:11px;padding:10px 13px;background:var(--deep);color:#fff;font-weight:750}
+.owner-prompt{border-color:#cbdccc;background:#f7faf6}
+@media(max-width:360px){.owner-input-row button{min-width:76px}}
 </style>
 </head>
 <body>
@@ -74,6 +81,19 @@ const blank = () => Object.fromEntries(IDS.map(k=>[k,0]));
 const newState = () => ({version:1,actions:[]});
 let state = (()=>{try {const raw=localStorage.getItem(KEY); if(!raw)return newState(); const s=JSON.parse(raw); if(validate(s))return s;}catch(_){} return newState();})();
 let tab='home', kind='debt', selected='all', years='5', statusText='';
+
+const OWNER_NAME_KEY='arafa_qazo_owner_name_v1';
+function normalizeOwnerName(value){return String(value??'').replace(/\s+/g,' ').trim().slice(0,40);}
+function readOwnerName(){try{return normalizeOwnerName(localStorage.getItem(OWNER_NAME_KEY));}catch(_){return '';}}
+let ownerName=readOwnerName();
+function ownerPrompt(){
+ if(ownerName)return '';
+ return `<div class="card owner-prompt"><h3>Ismingiz</h3><p>Namoz va ro‘za uchun bir marta kiriting.</p><div class="owner-input-row"><input id="ownerName" type="text" maxlength="40" autocomplete="name" placeholder="Ismingiz"><button type="button" data-act="saveOwner" data-source="ownerName">Saqlash</button></div></div>`;
+}
+function ownerSettings(){
+ return `<div class="card owner-settings"><h3>Ismingiz</h3><div class="owner-input-row"><input id="ownerSettingsName" type="text" maxlength="40" autocomplete="name" placeholder="Ismingiz" value="${safeHTML(ownerName)}"><button type="button" data-act="saveOwner" data-source="ownerSettingsName">Saqlash</button></div></div>`;
+}
+
 const $ = id => document.getElementById(id);
 const fmt=n=>Number(n).toLocaleString('en-US');
 const localDate=(d=new Date())=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
@@ -198,6 +218,7 @@ function rozaManage(){
  const result=latest||saved;
  const tabs=`<div class="section-head"><h2>Qazoni hisoblash</h2><span>Hanafiy mazhabi</span></div><div class="calc-choose"><button data-act="calcType" data-value="namoz">🕌<b>Namoz</b><small>Qazo namozlar</small></button><button class="chosen" data-act="calcType" data-value="roza">🌙<b>Ro‘za</b><small>Qazo ro‘zalar</small></button></div>`;
  return `${tabs}
+ ${ownerPrompt()}
  <div class="card">
  <h3>Qazo ro‘zalarni hisoblash</h3>
  <div class="roza-year-grid"><div class="field"><label for="rozaStartYear">Balog‘atga yetgan yilingiz</label><input id="rozaStartYear" type="number" inputmode="numeric" min="1900" max="2100" step="1" placeholder="Masalan, 2018" value="${safeHTML(rozaDraft.startYear)}"></div>
@@ -215,6 +236,7 @@ function rozaManage(){
 function manage(count){
  if(calcType==='roza')return rozaManage();
  return `<div class="section-head"><h2>Qazoni hisoblash</h2><span>Hanafiy mazhabi</span></div>
+ ${ownerPrompt()}
  <div class="calc-choose"><button class="${calcType==='namoz'?'chosen':''}" data-act="calcType" data-value="namoz">🕌<b>Namoz</b><small>Qazo namozlar</small></button><button class="${calcType==='roza'?'chosen':''}" data-act="calcType" data-value="roza">🌙<b>Ro‘za</b><small>Qazo ro‘zalar</small></button></div>
  <div class="card"><div class="calc-toggle"><button class="${calcMode==='year'?'chosen':''}" data-act="calcMode" data-value="year">Yil bo‘yicha</button><button class="${calcMode==='date'?'chosen':''}" data-act="calcMode" data-value="date">Sana bo‘yicha</button></div>
  ${namozFields()}
@@ -227,10 +249,11 @@ function manage(count){
 }
 function history(){const rows=[...state.actions].reverse();return `<div class="section-head"><h2>Harakatlar tarixi</h2><span>${fmt(rows.length)} ta yozuv</span></div><div class="card">${rows.length?rows.slice(0,150).map(a=>`<div class="history-row"><div><div class="history-title">${a.type==='debt'?'Hisobga qo‘shildi / tuzatildi':'O‘qildi / tuzatildi'} · ${actionName(a)}</div><div class="history-sub">${timeLabel(a.at)}</div></div><div class="amount ${a.type==='debt'?'add':'done'}">${sum(a.delta)>0?'+':''}${fmt(sum(a.delta))}</div></div>`).join(''):'<div class="muted">Hozircha yozuv yo‘q.</div>'}</div><button class="big-btn secondary" data-act="undo" ${!rows.length?'disabled':''}>Oxirgi amalni bekor qilish</button><p class="caption">Xato kiritilgan oxirgi amalga qaytishingiz mumkin. Boshqa amalni tuzatish uchun Hisob bo‘limidan foydalaning.</p>`;}
 function settings(count){return `<div class="section-head"><h2>Sozlamalar va zaxira</h2></div>
+ ${ownerSettings()}
  <div class="card"><h3>Maxfiylik</h3><p>Akkaunt yo‘q. Hisoblar faqat shu qurilmadagi ilova xotirasida turadi. Serverga yuborilmaydi. Boshqa odam ilovani ochsa, uning hisobi noldan boshlanadi.</p><div class="warning">iPhone xotirasi tozalansa yoki ilova ma’lumotlari o‘chirilsa, hisob yo‘qolishi mumkin. Muntazam <b>zaxira nusxa</b> saqlang.</div></div>
  <div class="card"><h3>Zaxira nusxa</h3><p>JSON faylni iPhone’ning Files dasturida saqlashingiz yoki boshqa telefoningizga ko‘chirishingiz mumkin. Zaxira faylni ommaga yubormang.</p><button class="big-btn" data-act="export">Zaxira nusxani yuklab olish</button><label class="big-btn secondary" style="display:flex;align-items:center;justify-content:center;cursor:pointer">Zaxiradan tiklash<input id="backupInput" type="file" accept=".json,application/json" hidden></label></div>
  <div class="card"><h3>Ma’lumotlarni tozalash</h3><p>Jami ${fmt(count.total)} ta boshlang‘ich qazo, ${fmt(count.completed)} ta ado etilgan qazo qaydi mavjud.</p><button class="big-btn danger" data-act="reset">Barcha hisoblarni o‘chirish</button></div>`;}
-function render(){const count=evaluate(state);$('app').innerHTML=`<div class="arafa-bar"><a href="./" aria-label="Arafa zikr va duolar sahifasiga qaytish">← Arafa · Zikr va duolar</a></div><header class="topbar"><div class="brand"><div class="emblem" aria-hidden="true">☾</div><strong>Qazo namozlarim hisobi</strong></div></header><main>${tab==='home'?home(count):tab==='manage'?manage(count):tab==='history'?history():settings(count)}</main><div class="status" role="status">${statusText}</div><nav class="nav" aria-label="Asosiy menyu">${[['home','⌂','Asosiy'],['manage','⊕','Hisob'],['history','◷','Tarix'],['settings','⚙','Sozlama']].map(([t,ico,label])=>`<button data-act="navigate" data-tab="${t}" class="${tab===t?'active':''}" ${tab===t?'aria-current="page"':''}><strong>${ico}</strong><span>${label}</span></button>`).join('')}</nav>`;}
+function render(){const count=evaluate(state);$('app').innerHTML=`<div class="arafa-bar"><a href="./" aria-label="Arafa zikr va duolar sahifasiga qaytish">← Bosh sahifa</a></div><header class="topbar"><div class="brand"><div class="emblem" aria-hidden="true">☾</div><div class="brand-text"><strong>Qazo namozlarim hisobi</strong>${ownerName?`<span class="owner-display">👤 ${safeHTML(ownerName)}</span>`:''}</div></div></header><main>${tab==='home'?home(count):tab==='manage'?manage(count):tab==='history'?history():settings(count)}</main><div class="status" role="status">${statusText}</div><nav class="nav" aria-label="Asosiy menyu">${[['home','⌂','Asosiy'],['manage','⊕','Hisob'],['history','◷','Tarix'],['settings','⚙','Sozlama']].map(([t,ico,label])=>`<button data-act="navigate" data-tab="${t}" class="${tab===t?'active':''}" ${tab===t?'aria-current="page"':''}><strong>${ico}</strong><span>${label}</span></button>`).join('')}</nav>`;}
 function ensureAction(type,keys,n){const count=evaluate(state);if(!Number.isSafeInteger(n)||n<=0||n>10000000){alert('1 dan 10 milliongacha butun son kiriting.');return;}
   if(type==='done'&&keys.some(k=>count.remaining[k]<n)){alert('Tanlangan namoz uchun qazo qoldig‘i yetarli emas. Oldin hisobga qo‘shing.');return;}
   if(n>=365&&type==='done'&&!confirm(`DIQQAT: ${keys.length} ta namoz turining HAR BIRIDAN ${fmt(n)} tadan qazo haqiqatan o‘qildimi?`))return;
@@ -242,6 +265,13 @@ document.addEventListener('click',e=>{
  if(b.dataset.kind){kind=b.dataset.kind;statusText='';render();return;}
  if(b.dataset.year){selected=$('choosePrayer')?.value||selected;years=b.dataset.year;statusText='';render();return;}
  const act=b.dataset.act,p=b.dataset.prayer;
+ if(act==='saveOwner'){
+   const field=$(b.dataset.source),next=normalizeOwnerName(field?.value);
+   if(!next){alert('Ismingizni kiriting.');field?.focus();return;}
+   try{localStorage.setItem(OWNER_NAME_KEY,next);ownerName=next;statusText='Ism saqlandi';render();}
+   catch(_){alert('Ismni saqlab bo‘lmadi. Xotirani tekshiring.');}
+   return;
+ }
  if(act==='navigate'){selectedPrayer=null;pendingRoza=false;tab=b.dataset.tab;statusText='';render();window.scrollTo(0,0);return;}
  if(act==='selectPrayer'){
    if(tab!=='home'||!PRAYERS.some(x=>x.id===p)||evaluate(state).remaining[p]<=0)return;
