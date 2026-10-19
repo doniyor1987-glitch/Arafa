@@ -378,7 +378,7 @@ document.addEventListener('click',e=>{
  }
  if(act==='undo'){if(state.actions.length&&confirm('Oxirgi amal bekor qilinsinmi?'))commit({...state,actions:state.actions.slice(0,-1)},'Oxirgi amal bekor qilindi');}
  if(act==='export'){
-   const blob=new Blob([JSON.stringify({...state,exportedAt:new Date().toISOString()},null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`qazo-hisobim-${nowLocalDate()}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
+   const blob=new Blob([JSON.stringify({...state,ownerName,exportedAt:new Date().toISOString()},null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`qazo-hisobim-${nowLocalDate()}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
  }
  if(act==='reset'){if(confirm('Rostdan ham HAMMA hisoblarni o‘chirmoqchimisiz?')&&confirm('Bu amaldan ortga qaytib bo‘lmaydi. Zaxira olganingizni tekshiring.'))commit(newState(),'Hisob tozalandi');}
 });
@@ -394,7 +394,12 @@ document.addEventListener('change',async e=>{
  if(e.target?.id!=='backupInput')return;
  const f=e.target.files?.[0];if(!f)return;
  try{if(f.size>20000000)throw new Error('Fayl juda katta');const obj=JSON.parse(await f.text());if(!validate(obj))throw new Error('Zaxira fayl noto‘g‘ri yoki hisob izchil emas');
- if(confirm('Hozirgi hisobingizni zaxira fayldagi hisob bilan ALMASHTIRASIZMI? Avval o‘zingiznikidan zaxira nusxa olish tavsiya qilinadi.'))commit({version:1,actions:obj.actions},'Zaxiradan tiklandi');
+ if(confirm('Hozirgi hisobingizni zaxira fayldagi hisob bilan ALMASHTIRASIZMI? Avval o‘zingiznikidan zaxira nusxa olish tavsiya qilinadi.')){
+   if(commit({version:1,actions:obj.actions},'Zaxiradan tiklandi')&&typeof obj.ownerName==='string'){
+     const saved=normalizeOwnerName(obj.ownerName);
+     if(saved){try{localStorage.setItem(OWNER_NAME_KEY,saved);ownerName=saved;render();}catch(_){alert('Namoz hisobi tiklandi, lekin ismni saqlashda xatolik bo‘ldi.');}}
+   }
+ }
  }catch(err){alert('Faylni o‘qib bo‘lmadi: '+err.message);}finally{e.target.value='';}
 });
 render();
