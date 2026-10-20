@@ -83,6 +83,34 @@
 .cal-prayers span.read{color:#246a4b;border-color:#cce3d2;background:#edf7ef;font-weight:750}
 .cal-detail p{margin:6px 0 0;font-size:12px}
 @media(max-width:370px){.cal-prayers{grid-template-columns:repeat(2,minmax(0,1fr))}.cal-days{gap:1px}}
+
+/* Kundalik namoz va qazo qarzining alohida kalendarlari */
+.cal-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:#f0f4ef;padding:5px;border-radius:13px}
+.cal-tabs button{padding:12px 5px;border:none;border-radius:10px;background:transparent;color:#617668;font-size:13px;font-weight:650;line-height:1.2}
+.cal-tabs button.chosen{background:#fff;color:#21563d;font-weight:800;box-shadow:0 1px 6px #204a2e12}
+.cal-explanation{font-size:12px!important;color:#6d8071!important;line-height:1.5!important;margin:12px 1px!important}
+.cal-jump{border-top:1px solid #e7ede5;margin-top:15px;padding-top:12px}
+.cal-jump label{display:block;font-size:12px;color:#68806f;font-weight:700;margin-bottom:7px}
+.cal-jump>div,.qazo-date-edit{display:flex;gap:8px}
+.cal-jump input,.qazo-date-edit input{height:43px;border:1px solid #ceddd1;background:white;border-radius:9px;padding:0 9px;min-width:0;flex:1;font-size:14px;color:#284e3a}
+.cal-jump button,.qazo-date-edit button{border:0;border-radius:9px;background:#245741;color:white;font-size:13px;font-weight:750;padding:0 14px}
+.cal-daily-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:13px}
+.cal-daily-btn{min-height:58px;text-align:left;padding:10px 11px;display:flex;align-items:center;justify-content:space-between;gap:6px;border:1px solid #dde7dd;background:#fff;border-radius:10px;color:#556d5b}
+.cal-daily-btn strong{font-size:12px}.cal-daily-btn small{font-size:10px;white-space:nowrap;color:#8b9a8b}
+.cal-daily-btn.read{border-color:#afd5be;background:#eaf7ed;color:#1d6242}
+.cal-daily-btn.read small{color:#208056;font-weight:800}
+.cal-confirm{background:#eff7ef;border:1px solid #cbe0cd;padding:12px;border-radius:11px;margin-top:12px}
+.cal-confirm p{font-size:13px!important;margin:0 0 9px!important}
+.cal-assign-btn{display:block;width:100%;min-height:45px;border:0;border-radius:10px;background:#205940;color:#fff;font-size:13px;font-weight:750;margin-top:12px}
+.cal-undated{font-size:12px!important;color:#718476!important;margin:15px 0 0!important}
+.qazo-date-pref{margin-top:15px;border:1px solid #dae7d9;background:#f8faf7;border-radius:13px;padding:12px}
+.qazo-no-date{margin:0 0 9px;color:#7e9081;font-size:12px}
+.qazo-date-details summary{cursor:pointer;font-size:12px;font-weight:700;color:#336449}
+.qazo-date-edit{margin-top:11px}
+.qazo-date-banner{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:5px;margin-bottom:10px}
+.qazo-date-banner span{font-size:13px;color:#1e553f}
+.qazo-date-banner button{font-size:12px;border:0;background:#e8eee8;color:#3a6b50;border-radius:9px;padding:9px}
+@media(max-width:420px){.cal-tabs button{font-size:12px}.cal-daily-btn{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:4px;min-height:59px}}
 </style>
 </head>
 <body>
