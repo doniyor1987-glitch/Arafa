@@ -130,6 +130,21 @@
 
 /* iPhone Safari: double-tap zoom yo‘q; odatiy surish va pinch-zoom saqlanadi. */
 html,body,button,a,summary,label{touch-action:manipulation}
+
+/* Bosiladigan oy-yil sarlavhasi va ixcham tanlash oynasi */
+.cal-switch .cal-month-heading{flex:1;min-width:0;width:auto;height:auto;min-height:43px;padding:7px 8px;border:0;background:transparent;color:#20553e;font-weight:800;font-size:16px;line-height:1.2;text-transform:capitalize;display:flex;justify-content:center;align-items:center;gap:9px}
+.cal-month-heading span{font-size:17px;color:#79927b}
+.cal-switch .cal-month-heading:focus-visible,.cal-picker-months button:focus-visible,.cal-picker-year-controls button:focus-visible{outline:3px solid #73a78a;outline-offset:1px}
+.cal-month-picker{border:1px solid #d6e5d8;border-radius:15px;background:#f8fbf8;padding:14px;margin:3px 0 16px}
+.cal-picker-year{display:flex;align-items:center;justify-content:space-between;gap:9px;flex-wrap:wrap;margin-bottom:12px}
+.cal-picker-year label{font-size:12px;color:#557966;font-weight:750}
+.cal-picker-year-controls{display:flex;align-items:center;gap:7px}
+.cal-picker-year-controls button{height:40px;width:39px;border:1px solid #d8e6d9;border-radius:10px;background:white;color:#1e5e41;font-size:21px;font-weight:750}
+.cal-picker-year-controls input{width:86px;height:41px;border:1px solid #bed6c4;border-radius:10px;padding:0 7px;text-align:center;color:#224d39;background:white;font-size:17px;font-weight:750}
+.cal-picker-months{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.cal-picker-months button{border:1px solid #dfeadf;min-height:43px;border-radius:10px;background:white;color:#2f5b43;font-size:13px;font-weight:650}
+.cal-picker-months button.picked{background:#e2f2e5;border-color:#8fbd9e;color:#165b39}
+.cal-picker-months button:disabled{opacity:.38}
 </style>
 </head>
 <body>
@@ -226,6 +241,7 @@ function recordNoEstimate(id,qazoDate){
  return commit({...state,actions:[...state.actions,action]},'Qazo namoz qayd etildi');
 }
 let calendarMonth=nowLocalDate().slice(0,7),calendarSelected=nowLocalDate();
+let calendarPickerOpen=false,calendarPickerYear=new Date().getFullYear();
 const DAILY_KEY='arafa_namoz_kundalik_v1';
 let calendarMode='daily',pendingDaily=null,qazoTarget='';
 let dailyPrayers=readDailyData();
@@ -347,6 +363,24 @@ function calendarMarkup(){
  const coverage=isDaily?[]:qazoCoverageRanges();
  const titles=['Du','Se','Cho','Pa','Ju','Sha','Ya'];
  const heading=first.toLocaleDateString('uz-UZ',{month:'long',year:'numeric',timeZone:'UTC'});
+ const maxYear=new Date().getFullYear();
+ const monthNames=['Yanvar','Fevral','Mart','Aprel','May','Iyun','Iyul','Avgust','Sentabr','Oktabr','Noyabr','Dekabr'];
+ const monthPicker=calendarPickerOpen?`<div class="cal-month-picker" id="cal-month-picker">
+   <div class="cal-picker-year">
+    <label for="calendarYearInput">Yilni tanlang</label>
+    <div class="cal-picker-year-controls">
+      <button type="button" data-act="calendarYearStep" data-step="-1" aria-label="Bir yil oldinga">−</button>
+      <input id="calendarYearInput" type="number" inputmode="numeric" min="1900" max="${maxYear}" step="1" value="${calendarPickerYear}" aria-label="Yil">
+      <button type="button" data-act="calendarYearStep" data-step="1" aria-label="Bir yil keyinga">+</button>
+    </div>
+   </div>
+   <div class="cal-picker-months" role="group" aria-label="Oyni tanlang">
+     ${monthNames.map((name,i)=>{
+       const mo=i+1,prefix=String(calendarPickerYear)+'-'+String(mo).padStart(2,'0');
+       return `<button type="button" data-act="calendarChooseMonth" data-month="${mo}" class="${prefix===calendarMonth?'picked':''}" ${prefix>today.slice(0,7)?'disabled':''}>${name}</button>`;
+     }).join('')}
+   </div>
+  </div>`:'';
  const slots=Array.from({length:offset},()=>'<span class="cal-empty" aria-hidden="true"></span>');
  for(let n=1;n<=count;n++){
   const day=calendarMonth+'-'+String(n).padStart(2,'0');
@@ -377,10 +411,10 @@ function calendarMarkup(){
  }
  return `<section class="card qazo-calendar"><div class="cal-tabs" role="group" aria-label="Kalendar turi"><button type="button" class="${isDaily?'chosen':''}" data-act="calendarType" data-value="daily" aria-pressed="${isDaily}">Namoz kalendarim</button><button type="button" class="${!isDaily?'chosen':''}" data-act="calendarType" data-value="qazo" aria-pressed="${!isDaily}">Qazo kalendarim</button></div>
   <p class="cal-explanation">${isDaily?'Kunni tanlang va o‘qilgan namozni bosing. Qayta bossangiz, belgi o‘chadi. Qazo hisobiga ta’sir qilmaydi.':'Kulrang kunlar — hisoblangan qazo davri. Kunni va namozni bosing: o‘qilganini belgilaysiz yoki qaytarasiz.'}</p>
-  <div class="cal-switch"><button type="button" data-act="calendarPrev" aria-label="Oldingi oy">‹</button><strong>${heading}</strong><button type="button" data-act="calendarNext" aria-label="Keyingi oy">›</button></div>
+  <div class="cal-switch"><button type="button" data-act="calendarPrev" aria-label="Oldingi oy">‹</button><button type="button" class="cal-month-heading" data-act="calendarOpenPicker" aria-expanded="${calendarPickerOpen}" aria-controls="cal-month-picker" aria-label="${heading}: oy va yilni tanlash">${heading} <span aria-hidden="true">${calendarPickerOpen?'⌃':'⌄'}</span></button><button type="button" data-act="calendarNext" aria-label="Keyingi oy" ${calendarMonth>=today.slice(0,7)?'disabled':''}>›</button></div>
+  ${monthPicker}
   <div class="cal-days">${titles.map(t=>`<span class="cal-weekday">${t}</span>`).join('')}${slots.join('')}</div>
   <div class="cal-legend"><span><i class="cal-dot green"></i>6/6 — to‘liq</span><span><i class="cal-dot yellow"></i>1–5 — qisman</span>${!isDaily?'<span><i class="cal-dot gray"></i>Hisoblangan qazo davri</span>':''}<span>Nuqta yo‘q — qayd yo‘q</span></div>
-  ${!isDaily?`<div class="cal-jump"><label for="calendarJump">Eski sanaga tez o‘tish</label><div><input id="calendarJump" type="date" min="1900-01-01" max="${today}" value="${viewing||''}"><button type="button" data-act="calendarGo">O‘tish</button></div></div>`:''}
   ${details}
   ${!isDaily?`<details class="cal-undated-panel"><summary>Sanasiz qazo o‘qidim</summary><p>Qaysi eski sananing qazosi ekanini bilmasangiz, shu yerdan qayd eting.</p><div class="cal-undated-grid">${PRAYERS.map(p=>`<button type="button" data-act="undatedQazo" data-prayer="${p.id}" ${hasQazoEstimate()&&evaluate(state).remaining[p.id]===0?'disabled':''}>${p.name} +1</button>`).join('')}</div></details><p class="cal-undated">Sana biriktirilmagan qazolar: <b>${fmt(sum(attribution.undated))} ta</b></p>`:''}
  </section>`;
@@ -523,11 +557,35 @@ document.addEventListener('click',e=>{
    catch(_){alert('Ismni saqlab bo‘lmadi. Xotirani tekshiring.');}
    return;
  }
- if(act==='navigate'){selectedPrayer=null;pendingRoza=false;tab=b.dataset.tab;statusText='';render();window.scrollTo(0,0);return;}
+ if(act==='navigate'){selectedPrayer=null;pendingRoza=false;calendarPickerOpen=false;tab=b.dataset.tab;statusText='';render();window.scrollTo(0,0);return;}
 
  if(act==='calendarType'){
    if(tab!=='home'||!['daily','qazo'].includes(b.dataset.value))return;
-   calendarMode=b.dataset.value;calendarMonth=nowLocalDate().slice(0,7);calendarSelected=nowLocalDate();pendingDaily=null;render();return;
+   calendarMode=b.dataset.value;calendarMonth=nowLocalDate().slice(0,7);calendarSelected=nowLocalDate();calendarPickerOpen=false;pendingDaily=null;render();return;
+ }
+ if(act==='calendarOpenPicker'){
+   if(tab!=='home')return;
+   calendarPickerOpen=!calendarPickerOpen;
+   calendarPickerYear=Number(calendarMonth.slice(0,4));
+   render();return;
+ }
+ if(act==='calendarYearStep'){
+   if(tab!=='home'||!calendarPickerOpen)return;
+   const val=Number($('calendarYearInput')?.value);
+   const base=Number.isInteger(val)&&val>=1900&&val<=new Date().getFullYear()?val:calendarPickerYear;
+   const next=base+Number(b.dataset.step);
+   if(!Number.isInteger(next)||next<1900||next>new Date().getFullYear())return;
+   calendarPickerYear=next;render();return;
+ }
+ if(act==='calendarChooseMonth'){
+   if(tab!=='home'||!calendarPickerOpen)return;
+   const year=Number($('calendarYearInput')?.value),month=Number(b.dataset.month),max=nowLocalDate().slice(0,7);
+   if(!Number.isInteger(year)||year<1900||year>new Date().getFullYear()||!Number.isInteger(month)||month<1||month>12){
+     alert('Yilni va oyni to‘g‘ri tanlang.');return;
+   }
+   const target=String(year).padStart(4,'0')+'-'+String(month).padStart(2,'0');
+   if(target>max){alert('Kelajakdagi oy tanlanmaydi.');return;}
+   calendarMonth=target;calendarSelected='';calendarPickerYear=year;calendarPickerOpen=false;pendingDaily=null;render();return;
  }
  if(act==='calendarPrev'||act==='calendarNext'){
    if(tab!=='home')return;
@@ -535,18 +593,12 @@ document.addEventListener('click',e=>{
    const shift=act==='calendarPrev'?-1:1;
    const newDate=new Date(Date.UTC(y,m-1+shift,1));
    if(newDate.getUTCFullYear()<1900||newDate.getUTCFullYear()>2100)return;
-   calendarMonth=newDate.toISOString().slice(0,7);calendarSelected='';pendingDaily=null;render();return;
+   calendarMonth=newDate.toISOString().slice(0,7);calendarSelected='';calendarPickerOpen=false;pendingDaily=null;render();return;
  }
  if(act==='calendarDay'){
    const day=b.dataset.date;
    if(tab!=='home'||!validCalendarDay(day)||!day.startsWith(calendarMonth))return;
-   calendarSelected=day;pendingDaily=null;render();return;
- }
- if(act==='calendarGo'){
-   if(tab!=='home')return;
-   const day=$('calendarJump')?.value;
-   if(!validCalendarDay(day)){alert('To‘g‘ri va o‘tib ketgan sanani tanlang.');return;}
-   calendarMonth=day.slice(0,7);calendarSelected=day;pendingDaily=null;render();return;
+   calendarSelected=day;calendarPickerOpen=false;pendingDaily=null;render();return;
  }
  if(act==='dailyToggle'){
    const day=b.dataset.date;
