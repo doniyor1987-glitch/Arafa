@@ -313,13 +313,15 @@ function calendarMarkup(){
  let details='';
  if(viewing&&isDaily){
   details=`<div class="cal-detail"><div class="cal-detail-head"><strong>${dayText}</strong><span>${filled===6?'To‘liq — 6/6':filled?filled+'/6 o‘qilgan':'Qayd yo‘q'}</span></div>
-   <div class="cal-daily-grid">${PRAYERS.map(p=>`<button type="button" data-act="dailyToggle" data-prayer="${p.id}" data-date="${viewing}" class="cal-daily-btn${row[p.id]?' read':''}" aria-pressed="${!!row[p.id]}"><strong>${p.name}</strong><small>${row[p.id]?'✓ O‘qildi':'Belgilash'}</small></button>`).join('')}</div>
-   ${pendingDaily&&pendingDaily.day===viewing?`<div class="cal-confirm"><p>${PRAYERS.find(p=>p.id===pendingDaily.id).name}: ${pendingDaily.was?'o‘qildi belgisini olib tashlaysizmi?':'o‘qilgan deb belgilaysizmi?'}</p><div class="prayer-confirm-buttons"><button type="button" class="prayer-cancel" data-act="dailyCancel">Bekor qilish</button><button type="button" class="prayer-approve" data-act="dailyConfirm">Tasdiqlash</button></div></div>`:''}
+   <div class="cal-daily-grid">${PRAYERS.map(p=>`<button type="button" data-act="dailyToggle" data-prayer="${p.id}" data-date="${viewing}" class="cal-daily-btn${row[p.id]?' read':''}" aria-pressed="${!!row[p.id]}"><strong>${p.name}</strong><small>${row[p.id]?'✓ O‘qildi':'O‘qidim'}</small></button>`).join('')}</div>
   </div>`;
  }else if(viewing){
+  const count=evaluate(state),planned=hasQazoEstimate();
   details=`<div class="cal-detail"><div class="cal-detail-head"><strong>${dayText}</strong><span>${filled===6?'Qazosi yopilgan — 6/6':filled?filled+'/6 qazo yopilgan':'Qazo belgilanmagan'}</span></div>
-   <div class="cal-prayers">${PRAYERS.map(p=>`<span class="${(row[p.id]||0)>0?'read':''}">${p.name}: ${fmt(row[p.id]||0)}</span>`).join('')}</div>
-   <button class="cal-assign-btn" type="button" data-act="assignQazoDate" data-date="${viewing}">${qazoTarget===viewing?'✓ Shu sana tanlangan':'Shu sananing qazosini belgilash →'}</button>
+   <div class="cal-daily-grid">${PRAYERS.map(p=>{
+    const marked=(row[p.id]||0)>0,unavailable=planned&&count.remaining[p.id]<=0&&!marked;
+    return `<button type="button" data-act="qazoToggle" data-prayer="${p.id}" data-date="${viewing}" class="cal-daily-btn${marked?' read':''}" aria-pressed="${marked}" ${unavailable?'disabled':''}><strong>${p.name}</strong><small>${marked?'✓ Yopildi':unavailable?'Qazo qolmagan':'O‘qidim'}</small></button>`;
+   }).join('')}</div>
   </div>`;
  }
  return `<section class="card qazo-calendar"><div class="cal-tabs" role="group" aria-label="Kalendar turi"><button type="button" class="${isDaily?'chosen':''}" data-act="calendarType" data-value="daily" aria-pressed="${isDaily}">Namoz kalendarim</button><button type="button" class="${!isDaily?'chosen':''}" data-act="calendarType" data-value="qazo" aria-pressed="${!isDaily}">Qazo kalendarim</button></div>
@@ -329,7 +331,7 @@ function calendarMarkup(){
   <div class="cal-legend"><span><i class="cal-dot green"></i>6/6 — to‘liq</span><span><i class="cal-dot yellow"></i>1–5 — qisman</span><span>Nuqta yo‘q — qayd yo‘q</span></div>
   <div class="cal-jump"><label for="calendarJump">${isDaily?'Boshqa kunni tanlash':'Eski sanaga tez o‘tish'}</label><div><input id="calendarJump" type="date" min="1900-01-01" max="${today}" value="${viewing||''}"><button type="button" data-act="calendarGo">O‘tish</button></div></div>
   ${details}
-  ${!isDaily?`<p class="cal-undated">Sana biriktirilmagan qazo namozlar: <b>${fmt(sum(attribution.undated))} ta</b></p>`:''}
+  ${!isDaily?`<details class="cal-undated-panel"><summary>Sanasiz qazo o‘qidim</summary><p>Qaysi eski sananing qazosi ekanini bilmasangiz, shu yerdan qayd eting.</p><div class="cal-undated-grid">${PRAYERS.map(p=>`<button type="button" data-act="undatedQazo" data-prayer="${p.id}" ${hasQazoEstimate()&&evaluate(state).remaining[p.id]===0?'disabled':''}>${p.name} +1</button>`).join('')}</div></details><p class="cal-undated">Sana biriktirilmagan qazolar: <b>${fmt(sum(attribution.undated))} ta</b></p>`:''}
  </section>`;
 }
 
@@ -348,33 +350,12 @@ function rozaDashboard(){
 }
 let selectedPrayer=null,pendingRoza=false;
 function home(count){
-const credited=qazoTarget?(qazoAttribution().days[qazoTarget]||{}):{};
-return `${hero(count)}
-<div class="qazo-date-pref">
- ${qazoTarget?`<div class="qazo-date-banner"><span>Qazo sanasi: <b>${qazoTarget}</b></span><button type="button" data-act="clearQazoDate">Sanasiz davom etish ×</button></div>`:`<p class="qazo-no-date">Sana ko‘rsatilmagan — qazo umumiy hisobga yoziladi</p>`}
- <details class="qazo-date-details" ${qazoTarget?'open':''}><summary>Qaysi sananing qazosi? (ixtiyoriy)</summary><div class="qazo-date-edit"><input id="qazoTargetInput" type="date" min="1900-01-01" max="${nowLocalDate()}" value="${qazoTarget}"><button type="button" data-act="qazoDateSet">Tanlash</button></div></details>
-</div>
-<div class="section-head"><h2>Namozlar</h2><span>O‘qilganini belgilash</span></div>
-<div class="prayer-list">${PRAYERS.map(p=>{
-  const planned=hasQazoEstimate(),remaining=count.remaining[p.id],open=selectedPrayer===p.id;
-  const taken=!!qazoTarget&&(credited[p.id]||0)>0;
-  return `<div class="prayer-row${open?' opened':''}">
-    <button type="button" class="prayer-select" data-act="selectPrayer" data-prayer="${p.id}" aria-expanded="${open}" aria-controls="prayer-detail-${p.id}" ${(planned&&remaining===0)||taken?'disabled':''}>
-      <span class="prayer-label"><strong>${p.name}</strong><small>${fmt(count.done[p.id])} o‘qilgan</small></span>
-      <span class="prayer-remaining"><strong>${taken?"✓":planned?fmt(remaining):"＋"}</strong><small>${taken?"shu sana yopilgan":planned?"qoldi":"Qayd etish"}</small></span>
-      <span class="prayer-chevron" aria-hidden="true">${open?'⌄':'›'}</span>
-    </button>
-    ${open?`<div class="prayer-confirm" id="prayer-detail-${p.id}" role="group" aria-label="${p.name} tasdiqlash">
-      <p>1 ta <strong>${p.name}</strong> qazosi o‘qildi${qazoTarget?` va <b>${qazoTarget}</b> sanaga yoziladi`:``}. Tasdiqlaysizmi?</p>
-      <div class="prayer-confirm-buttons"><button type="button" class="prayer-cancel" data-act="cancelPrayer">Bekor qilish</button><button type="button" class="prayer-approve" data-act="confirmPrayer" data-prayer="${p.id}">Ha, o‘qildi</button></div>
-    </div>`:''}
-  </div>`;
-}).join('')}</div>
-${calendarMarkup()}
-<div class="section-head"><h2>Bugungi natija</h2></div>
-<div class="mini-stats"><div class="card"><div class="caption">Bugun o‘qilgan</div><div class="metric">${fmt(recentToday())}</div></div><div class="card"><div class="caption">Jami ado etilgan</div><div class="metric">${fmt(count.completed)}</div></div></div>
-${rozaDashboard()}
-<button class="big-btn secondary" data-act="navigate" data-tab="manage">Qazoni hisoblash →</button>`;
+ return `${calendarMarkup()}
+ ${hero(count)}
+ <div class="section-head"><h2>Bugungi natija</h2></div>
+ <div class="mini-stats"><div class="card"><div class="caption">Bugun o‘qilgan qazo</div><div class="metric">${fmt(recentToday())}</div></div><div class="card"><div class="caption">Jami ado etilgan qazo</div><div class="metric">${fmt(count.completed)}</div></div></div>
+ ${rozaDashboard()}
+ <button class="big-btn secondary" data-act="navigate" data-tab="manage">Qazoni hisoblash →</button>`;
 }
 
 function periodActions(){return state.actions.filter(a=>a.type==='debt'&&typeof a.note==='string'&&/^DAVR\|\d{4}-\d{2}-\d{2}\|\d{4}-\d{2}-\d{2}\|/.test(a.note));}
@@ -486,20 +467,6 @@ document.addEventListener('click',e=>{
    return;
  }
  if(act==='navigate'){selectedPrayer=null;pendingRoza=false;tab=b.dataset.tab;statusText='';render();window.scrollTo(0,0);return;}
- if(act==='selectPrayer'){
-   if(tab!=='home'||!PRAYERS.some(x=>x.id===p)||(hasQazoEstimate()&&evaluate(state).remaining[p]<=0)||(qazoTarget&&(qazoAttribution().days[qazoTarget]?.[p]||0)>0))return;
-   pendingRoza=false;selectedPrayer=selectedPrayer===p?null:p;statusText='';render();return;
- }
- if(act==='cancelPrayer'){selectedPrayer=null;render();return;}
- if(act==='confirmPrayer'){
-   if(tab!=='home'||selectedPrayer!==p||!PRAYERS.some(x=>x.id===p))return;
-   if(hasQazoEstimate()&&evaluate(state).remaining[p]<=0){selectedPrayer=null;render();return;}
-   if(qazoTarget&&(qazoAttribution().days[qazoTarget]?.[p]||0)>0){selectedPrayer=null;render();return;}
-   selectedPrayer=null;
-   if(hasQazoEstimate())record('done',{[p]:1},'',qazoTarget);
-   else recordNoEstimate(p,qazoTarget);
-   return;
- }
 
  if(act==='calendarType'){
    if(tab!=='home'||!['daily','qazo'].includes(b.dataset.value))return;
@@ -524,32 +491,22 @@ document.addEventListener('click',e=>{
    if(!validCalendarDay(day)){alert('To‘g‘ri va o‘tib ketgan sanani tanlang.');return;}
    calendarMonth=day.slice(0,7);calendarSelected=day;pendingDaily=null;render();return;
  }
- if(act==='qazoDateSet'){
-   if(tab!=='home')return;
-   const day=$('qazoTargetInput')?.value;
-   if(!validCalendarDay(day)){alert('Qazo uchun to‘g‘ri sanani kiriting.');return;}
-   qazoTarget=day;calendarMode='qazo';calendarMonth=day.slice(0,7);calendarSelected=day;selectedPrayer=null;render();return;
- }
- if(act==='assignQazoDate'){
-   const day=b.dataset.date;
-   if(tab!=='home'||calendarMode!=='qazo'||!validCalendarDay(day))return;
-   qazoTarget=day;selectedPrayer=null;render();window.scrollTo(0,0);return;
- }
- if(act==='clearQazoDate'){
-   qazoTarget='';selectedPrayer=null;render();return;
- }
  if(act==='dailyToggle'){
-   const day=b.dataset.date,id=p;
-   if(tab!=='home'||calendarMode!=='daily'||day!==calendarSelected||!validCalendarDay(day)||!IDS.includes(id))return;
-   pendingDaily={day,id,was:!!dailyPrayers.days[day]?.[id]};render();return;
+   const day=b.dataset.date;
+   if(tab!=='home'||calendarMode!=='daily'||day!==calendarSelected||!validCalendarDay(day)||!IDS.includes(p))return;
+   saveDailyPrayer(day,p,!dailyPrayers.days[day]?.[p]);return;
  }
- if(act==='dailyCancel'){pendingDaily=null;render();return;}
- if(act==='dailyConfirm'){
-   const pending=pendingDaily;
-   if(tab!=='home'||calendarMode!=='daily'||!pending||pending.day!==calendarSelected||!validCalendarDay(pending.day))return;
-   const current=!!dailyPrayers.days[pending.day]?.[pending.id];
-   if(current!==pending.was){pendingDaily=null;render();return;}
-   pendingDaily=null;saveDailyPrayer(pending.day,pending.id,!current);return;
+ if(act==='qazoToggle'){
+   const day=b.dataset.date;
+   if(tab!=='home'||calendarMode!=='qazo'||day!==calendarSelected||!validCalendarDay(day)||!IDS.includes(p))return;
+   toggleDatedQazo(day,p);return;
+ }
+ if(act==='undatedQazo'){
+   if(tab!=='home'||calendarMode!=='qazo'||!IDS.includes(p))return;
+   if(hasQazoEstimate()){
+     if(evaluate(state).remaining[p]>0)record('done',{[p]:1},'Sanasiz qazo o‘qildi');
+   }else recordNoEstimate(p);
+   return;
  }
  if(act==='rozaPrepare'){
    if(tab!=='home'||roza.debt-roza.done<=0)return;
