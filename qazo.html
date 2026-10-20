@@ -58,6 +58,31 @@
 .owner-input-row button{min-width:86px;border:0;border-radius:11px;padding:10px 13px;background:var(--deep);color:#fff;font-weight:750}
 .owner-prompt{border-color:#cbdccc;background:#f7faf6}
 @media(max-width:360px){.owner-input-row button{min-width:76px}}
+
+/* Qazo kalendari: yashil 6/6, sariq 1–5; belgisiz kun qayd etilmagan */
+.qazo-calendar{margin-top:22px;padding:17px 15px}
+.cal-top h3{margin:0 0 4px;font-size:17px}.cal-top p{margin:0;font-size:12px}
+.cal-switch{display:flex;align-items:center;justify-content:space-between;margin:15px 0 9px;gap:12px}
+.cal-switch strong{text-transform:capitalize;font-size:16px}
+.cal-switch button{width:40px;height:39px;border:1px solid #dce7dc;background:#f5f9f4;color:#225c45;border-radius:11px;font-size:27px;line-height:1}
+.cal-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px}
+.cal-weekday{display:grid;place-items:center;height:27px;color:#718578;font-size:11px;font-weight:700}
+.cal-empty{min-height:49px}
+.cal-day{border:1px solid transparent;border-radius:11px;background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:49px;font-size:13px;color:#2b4637;padding:5px 1px}
+.cal-day:disabled{opacity:.35}.cal-day.cal-today{background:#eef6ee}.cal-day.cal-current{border-color:#578e70;background:#ecf5eb;font-weight:750}
+.cal-day:focus-visible{outline:2px solid #2c7952;outline-offset:1px}
+.cal-dot{width:7px;height:7px;display:inline-block;border-radius:50%;background:transparent}
+.cal-dot.green{background:#299665}.cal-dot.yellow{background:#e6b23d}
+.cal-legend{display:flex;flex-wrap:wrap;gap:8px 12px;margin-top:15px;color:#728375;font-size:11px}
+.cal-legend span{display:inline-flex;gap:5px;align-items:center}
+.cal-detail{margin-top:15px;border-top:1px solid #e2ebe2;padding-top:12px}
+.cal-detail-head{display:flex;justify-content:space-between;gap:12px;align-items:center;font-size:12px}
+.cal-detail-head strong{font-size:13px}.cal-detail-head span{color:#547864;white-space:nowrap}
+.cal-prayers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:13px 0}
+.cal-prayers span{padding:7px 5px;border:1px solid #e7ede5;background:#fafbfa;border-radius:9px;text-align:center;color:#819183;font-size:11px}
+.cal-prayers span.read{color:#246a4b;border-color:#cce3d2;background:#edf7ef;font-weight:750}
+.cal-detail p{margin:6px 0 0;font-size:12px}
+@media(max-width:370px){.cal-prayers{grid-template-columns:repeat(2,minmax(0,1fr))}.cal-days{gap:1px}}
 </style>
 </head>
 <body>
@@ -102,6 +127,7 @@ function sum(o){return Object.values(o).reduce((a,b)=>a+b,0);}
 function evaluate(s){
   const debt=blank(),done=blank();
   for(const a of s.actions){
+    if(a.autoDebt===true)for(const [key,value] of Object.entries(a.delta))debt[key]+=value;
     const target=a.type==='debt'?debt:done;
     for(const [key,value] of Object.entries(a.delta))target[key]+=value;
     if(IDS.some(k=>done[k]<0||debt[k]<0||done[k]>debt[k]))throw new Error('Hisob mos emas');
@@ -115,6 +141,7 @@ function validate(s){
     const entries=Object.entries(a.delta);
     if(entries.length<1||entries.length>6)return false;
     if(entries.some(([k,v])=>!IDS.includes(k)||!Number.isSafeInteger(v)||Math.abs(v)>10000000||v===0))return false;
+    if(a.autoDebt!==undefined&&(a.autoDebt!==true||a.type!=='done'||entries.some(([,v])=>v<=0)))return false;
   }
   try {evaluate(s);return true;} catch(_){return false;}
 }
@@ -124,12 +151,73 @@ function commit(next,notice){
   state=next;statusText=notice||'Saqlandi';render();return true;
 }
 function record(type,delta,note){
-  return commit({...state,actions:[...state.actions,{type,delta,at:new Date().toISOString(),note:note||''}]},'Hisob saqlandi');
+  return commit({...state,actions:[...state.actions,{type,delta,at:new Date().toISOString(),on:nowLocalDate(),note:note||''}]},'Hisob saqlandi');
 }
 function actionName(a){const p=Object.keys(a.delta);return p.length===6?'Barcha namozlar':p.map(k=>PRAYERS.find(x=>x.id===k)?.name||k).join(', ');}
 function timeLabel(iso){return new Date(iso).toLocaleString('uz-UZ',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});}
-function recentToday(){return state.actions.filter(a=>a.type==='done'&&localDate(new Date(a.at))===nowLocalDate()).reduce((acc,a)=>acc+sum(a.delta),0);}
-function hero(count){const remaining=count.total-count.completed,p=count.total?Math.min(100,100*count.completed/count.total):0;return `<div class="hero"><div class="hero-eyebrow">QOLGAN QAZO NAMOZLAR</div><h1>${fmt(remaining)} <small>ta</small></h1><div class="hero-sub">Har bir qazo namozingiz qayd etiladi</div><div class="progress"><div style="width:${p.toFixed(2)}%"></div></div><div class="hero-stats"><span>Jami <strong>${fmt(count.total)}</strong></span><span>O‘qilgan <strong>${fmt(count.completed)}</strong></span><span><strong>${Math.round(p)}%</strong> bajarildi</span></div></div>`;}
+
+function hasQazoEstimate(){return state.actions.some(a=>a.type==='debt');}
+function recordNoEstimate(id){
+ if(!IDS.includes(id)||hasQazoEstimate())return false;
+ const action={type:'done',delta:{[id]:1},at:new Date().toISOString(),on:nowLocalDate(),autoDebt:true,note:'Rejasiz o‘qilgan qazo'};
+ return commit({...state,actions:[...state.actions,action]},'Qazo namoz qayd etildi');
+}
+let calendarMonth=nowLocalDate().slice(0,7),calendarSelected=nowLocalDate();
+function calendarCounts(){
+ const stacks=Object.fromEntries(IDS.map(id=>[id,[]]));
+ for(const a of state.actions){
+  if(a.type!=='done')continue;
+  const on=/^\d{4}-\d{2}-\d{2}$/.test(a.on||'')?a.on:localDate(new Date(a.at));
+  for(const [id,n] of Object.entries(a.delta)){
+   const list=stacks[id];
+   if(n>0){list.push({on,n});continue;}
+   let undo=-n;
+   while(undo>0&&list.length){
+    const last=list[list.length-1],take=Math.min(undo,last.n);
+    last.n-=take;undo-=take;
+    if(last.n===0)list.pop();
+   }
+  }
+ }
+ const days={};
+ for(const id of IDS)for(const item of stacks[id]){
+  const row=days[item.on]||(days[item.on]=blank());
+  row[id]+=item.n;
+ }
+ return days;
+}
+function calendarMarkup(){
+ const [year,month]=calendarMonth.split('-').map(Number);
+ const first=new Date(Date.UTC(year,month-1,1));
+ const count=new Date(Date.UTC(year,month,0)).getUTCDate();
+ const offset=(first.getUTCDay()+6)%7;
+ const data=calendarCounts(),today=nowLocalDate();
+ const titles=['Du','Se','Cho','Pa','Ju','Sha','Ya'];
+ const heading=first.toLocaleDateString('uz-UZ',{month:'long',year:'numeric',timeZone:'UTC'});
+ const slots=Array.from({length:offset},()=>'<span class="cal-empty" aria-hidden="true"></span>');
+ for(let n=1;n<=count;n++){
+  const day=calendarMonth+'-'+String(n).padStart(2,'0'),row=data[day]||blank();
+  const filled=IDS.filter(id=>row[id]>0).length;
+  const color=filled===6?'green':filled>0?'yellow':'';
+  const selected=day===calendarSelected,old=day<=today;
+  slots.push(`<button type="button" data-act="calendarDay" data-date="${day}" class="cal-day${selected?' cal-current':''}${day===today?' cal-today':''}" aria-label="${day}: ${filled?filled+' ta namoz turidan o‘qilgan':'qayd yo‘q'}" aria-pressed="${selected}" ${old?'':'disabled'}><span>${n}</span><i class="cal-dot ${color}" aria-hidden="true"></i></button>`);
+ }
+ const viewing=calendarSelected.startsWith(calendarMonth)?calendarSelected:null;
+ const row=viewing?(data[viewing]||blank()):null;
+ const filled=row?IDS.filter(id=>row[id]>0).length:0;
+ const daily=row?sum(row):0;
+ const dayText=viewing?new Date(viewing+'T12:00:00Z').toLocaleDateString('uz-UZ',{day:'numeric',month:'long',year:'numeric',timeZone:'UTC'}):'';
+ const stats=viewing?`<div class="cal-detail"><div class="cal-detail-head"><strong>${dayText}</strong><span>${filled===6?'To‘liq — 6/6':filled?filled+'/6 tur':'Qayd yo‘q'}</span></div>${daily?`<div class="cal-prayers">${PRAYERS.map(p=>`<span class="${row[p.id]>0?'read':''}">${p.name}: ${fmt(row[p.id])}</span>`).join('')}</div><p>${fmt(daily)} ta qazo namoz qayd etilgan</p>`:'<p>Bu kunda namoz qaydi yo‘q.</p>'}</div>`:'';
+ return `<section class="card qazo-calendar"><div class="cal-top"><div><h3>Namozlar kalendari</h3><p>Qaysi kunlari qazo o‘qilganini ko‘ring</p></div></div>
+ <div class="cal-switch"><button data-act="calendarPrev" aria-label="Oldingi oy">‹</button><strong>${heading}</strong><button data-act="calendarNext" aria-label="Keyingi oy">›</button></div>
+ <div class="cal-days">${titles.map(t=>`<span class="cal-weekday">${t}</span>`).join('')}${slots.join('')}</div>
+ <div class="cal-legend"><span><i class="cal-dot green"></i>6/6 — to‘liq</span><span><i class="cal-dot yellow"></i>1–5 — qisman</span><span>Nuqta yo‘q — qayd yo‘q</span></div>
+ ${stats}</section>`;
+}
+
+function recentToday(){return sum(calendarCounts()[nowLocalDate()]||blank());}
+function hero(count){if(!hasQazoEstimate())return `<div class="hero"><div class="hero-eyebrow">O‘QILGAN QAZO NAMOZLAR</div><h1>${fmt(count.completed)} <small>ta</small></h1><div class="hero-sub">Oldindan yil yoki qazo sonini kiritmasdan qayd etavering</div></div>`;
+const remaining=count.total-count.completed,p=count.total?Math.min(100,100*count.completed/count.total):0;return `<div class="hero"><div class="hero-eyebrow">QOLGAN QAZO NAMOZLAR</div><h1>${fmt(remaining)} <small>ta</small></h1><div class="hero-sub">Har bir qazo namozingiz qayd etiladi</div><div class="progress"><div style="width:${p.toFixed(2)}%"></div></div><div class="hero-stats"><span>Jami <strong>${fmt(count.total)}</strong></span><span>O‘qilgan <strong>${fmt(count.completed)}</strong></span><span><strong>${Math.round(p)}%</strong> bajarildi</span></div></div>`;}
 function rozaDashboard(){
  const remaining=Math.max(0,roza.debt-roza.done);
  if(roza.debt===0)return `<div class="card roza-dashboard"><div class="roza-dashboard-head"><h3>🌙 Ro‘za hisobim</h3><span>Hisob kiritilmagan</span></div><p>Qazo ro‘zangizni kiritsangiz, qolgan kunlar va tugatish rejasi shu yerda chiqadi.</p><button class="big-btn secondary" data-act="goRoza">Ro‘zani hisoblash →</button></div>`;
@@ -142,14 +230,14 @@ function rozaDashboard(){
 }
 let selectedPrayer=null,pendingRoza=false;
 function home(count){
-return `${hero(count)}${count.total===0?'<div class="warning">Boshlash uchun Hisob bo‘limida qazo namozlar miqdorini kiriting.</div>':''}
+return `${hero(count)}
 <div class="section-head"><h2>Namozlar</h2><span>O‘qilganini belgilash</span></div>
 <div class="prayer-list">${PRAYERS.map(p=>{
-  const remaining=count.remaining[p.id],open=selectedPrayer===p.id;
+  const planned=hasQazoEstimate(),remaining=count.remaining[p.id],open=selectedPrayer===p.id;
   return `<div class="prayer-row${open?' opened':''}">
-    <button type="button" class="prayer-select" data-act="selectPrayer" data-prayer="${p.id}" aria-expanded="${open}" aria-controls="prayer-detail-${p.id}" ${remaining===0?'disabled':''}>
+    <button type="button" class="prayer-select" data-act="selectPrayer" data-prayer="${p.id}" aria-expanded="${open}" aria-controls="prayer-detail-${p.id}" ${planned&&remaining===0?'disabled':''}>
       <span class="prayer-label"><strong>${p.name}</strong><small>${fmt(count.done[p.id])} o‘qilgan</small></span>
-      <span class="prayer-remaining"><strong>${fmt(remaining)}</strong><small>qoldi</small></span>
+      <span class="prayer-remaining"><strong>${planned?fmt(remaining):"＋"}</strong><small>${planned?"qoldi":"Qayd etish"}</small></span>
       <span class="prayer-chevron" aria-hidden="true">${open?'⌄':'›'}</span>
     </button>
     ${open?`<div class="prayer-confirm" id="prayer-detail-${p.id}" role="group" aria-label="${p.name} tasdiqlash">
@@ -158,6 +246,7 @@ return `${hero(count)}${count.total===0?'<div class="warning">Boshlash uchun His
     </div>`:''}
   </div>`;
 }).join('')}</div>
+${calendarMarkup()}
 <div class="section-head"><h2>Bugungi natija</h2></div>
 <div class="mini-stats"><div class="card"><div class="caption">Bugun o‘qilgan</div><div class="metric">${fmt(recentToday())}</div></div><div class="card"><div class="caption">Jami ado etilgan</div><div class="metric">${fmt(count.completed)}</div></div></div>
 ${rozaDashboard()}
@@ -274,14 +363,29 @@ document.addEventListener('click',e=>{
  }
  if(act==='navigate'){selectedPrayer=null;pendingRoza=false;tab=b.dataset.tab;statusText='';render();window.scrollTo(0,0);return;}
  if(act==='selectPrayer'){
-   if(tab!=='home'||!PRAYERS.some(x=>x.id===p)||evaluate(state).remaining[p]<=0)return;
+   if(tab!=='home'||!PRAYERS.some(x=>x.id===p)||(hasQazoEstimate()&&evaluate(state).remaining[p]<=0))return;
    pendingRoza=false;selectedPrayer=selectedPrayer===p?null:p;statusText='';render();return;
  }
  if(act==='cancelPrayer'){selectedPrayer=null;render();return;}
  if(act==='confirmPrayer'){
    if(tab!=='home'||selectedPrayer!==p||!PRAYERS.some(x=>x.id===p))return;
-   if(evaluate(state).remaining[p]<=0){selectedPrayer=null;render();return;}
-   selectedPrayer=null;ensureAction('done',[p],1);return;
+   if(hasQazoEstimate()&&evaluate(state).remaining[p]<=0){selectedPrayer=null;render();return;}
+   selectedPrayer=null;
+   if(hasQazoEstimate())ensureAction('done',[p],1);else recordNoEstimate(p);
+   return;
+ }
+ if(act==='calendarPrev'||act==='calendarNext'){
+   if(tab!=='home')return;
+   const [y,m]=calendarMonth.split('-').map(Number);
+   const shift=act==='calendarPrev'?-1:1;
+   const newDate=new Date(Date.UTC(y,m-1+shift,1));
+   if(newDate.getUTCFullYear()<1900||newDate.getUTCFullYear()>2100)return;
+   calendarMonth=newDate.toISOString().slice(0,7);calendarSelected='';render();return;
+ }
+ if(act==='calendarDay'){
+   const day=b.dataset.date;
+   if(tab!=='home'||!/^\d{4}-\d{2}-\d{2}$/.test(day)||!day.startsWith(calendarMonth)||day>nowLocalDate())return;
+   calendarSelected=day;render();return;
  }
  if(act==='rozaPrepare'){
    if(tab!=='home'||roza.debt-roza.done<=0)return;
