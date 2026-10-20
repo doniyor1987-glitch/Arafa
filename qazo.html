@@ -136,8 +136,7 @@ html,body,button,a,summary,label{touch-action:manipulation}
 .cal-month-heading span{font-size:17px;color:#79927b}
 .cal-switch .cal-month-heading:focus-visible,.cal-picker-months button:focus-visible,.cal-picker-year-controls button:focus-visible{outline:3px solid #73a78a;outline-offset:1px}
 .cal-month-picker{border:1px solid #d6e5d8;border-radius:15px;background:#f8fbf8;padding:14px;margin:3px 0 16px}
-.cal-picker-year{display:flex;align-items:center;justify-content:space-between;gap:9px;flex-wrap:wrap;margin-bottom:12px}
-.cal-picker-year label{font-size:12px;color:#557966;font-weight:750}
+.cal-picker-year{display:flex;align-items:center;justify-content:center;gap:9px;flex-wrap:wrap;margin-bottom:12px}
 .cal-picker-year-controls{display:flex;align-items:center;gap:7px}
 .cal-picker-year-controls button{height:40px;width:39px;border:1px solid #d8e6d9;border-radius:10px;background:white;color:#1e5e41;font-size:21px;font-weight:750}
 .cal-picker-year-controls input{width:86px;height:41px;border:1px solid #bed6c4;border-radius:10px;padding:0 7px;text-align:center;color:#224d39;background:white;font-size:17px;font-weight:750}
@@ -381,12 +380,11 @@ function calendarMarkup(){
  const data=isDaily?dailyPrayers.days:attribution.days;
  const coverage=isDaily?[]:qazoCoverageRanges();
  const titles=['Du','Se','Cho','Pa','Ju','Sha','Ya'];
- const heading=first.toLocaleDateString('uz-UZ',{month:'long',year:'numeric',timeZone:'UTC'});
- const maxYear=new Date().getFullYear();
  const monthNames=['Yanvar','Fevral','Mart','Aprel','May','Iyun','Iyul','Avgust','Sentabr','Oktabr','Noyabr','Dekabr'];
+ const heading=monthNames[month-1]+' '+year;
+ const maxYear=new Date().getFullYear();
  const monthPicker=calendarPickerOpen?`<div class="cal-month-picker" id="cal-month-picker">
    <div class="cal-picker-year">
-    <label for="calendarYearInput">Yilni tanlang</label>
     <div class="cal-picker-year-controls">
       <button type="button" data-act="calendarYearStep" data-step="-1" aria-label="Bir yil oldinga">−</button>
       <input id="calendarYearInput" type="number" inputmode="numeric" min="1900" max="${maxYear}" step="1" value="${calendarPickerYear}" aria-label="Yil">
