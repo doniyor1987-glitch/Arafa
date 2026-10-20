@@ -157,6 +157,12 @@ html,body,button,a,summary,label{touch-action:manipulation}
 .cal-undated-success{margin-top:11px;padding:11px 12px;background:#e5f6e8;border:1px solid #9fdaad;border-radius:11px;display:flex;flex-direction:column;gap:5px;color:#205b3c}
 .cal-undated-success strong{font-size:13px}
 .cal-undated-success span{font-size:12px;line-height:1.5}
+
+/* Qazo kalendaridagi eng oxirgi amalni Tarixga kirmasdan qaytarish */
+.cal-quick-undo{margin-top:13px;border-top:1px solid #e3ebe2;padding-top:13px}
+.cal-quick-undo-btn{width:100%;min-height:45px;border:1px solid #d5e3d7;border-radius:11px;color:#305e45;background:#f4f8f3;font-size:13px;font-weight:750}
+.cal-quick-undo-btn:disabled{opacity:.45}
+.cal-quick-undo p{margin:8px 2px 0;color:#728673;font-size:11px;line-height:1.45;overflow-wrap:anywhere}
 </style>
 </head>
 <body>
@@ -429,6 +435,10 @@ function calendarMarkup(){
   <div class="cal-days">${titles.map(t=>`<span class="cal-weekday">${t}</span>`).join('')}${slots.join('')}</div>
   <div class="cal-legend"><span><i class="cal-dot green"></i>6/6 — to‘liq</span><span><i class="cal-dot yellow"></i>1–5 — qisman</span>${!isDaily?'<span><i class="cal-dot gray"></i>Hisoblangan qazo davri</span>':''}<span>Nuqta yo‘q — qayd yo‘q</span></div>
   ${details}
+  ${!isDaily?`<div class="cal-quick-undo">
+     <button type="button" data-act="undo" class="cal-quick-undo-btn" ${state.actions.length?'':'disabled'}>↶ Oxirgi amalni bekor qilish</button>
+     ${state.actions.length?`<p>Oxirgi amal: ${state.actions[state.actions.length-1].type==='range'?'Hisob davri':state.actions[state.actions.length-1].type==='debt'?'Qazo hisobini yangilash':actionName(state.actions[state.actions.length-1])}</p>`:''}
+   </div>`:''}
   ${!isDaily?`<div class="cal-undated-panel">
     <button type="button" class="cal-undated-toggle" data-act="undatedToggle" aria-expanded="${undatedOpen}" aria-controls="undatedQazoBody"><span>Sanasiz qazo o‘qidim</span><span aria-hidden="true">${undatedOpen?'⌃':'⌄'}</span></button>
     ${undatedOpen?`<div id="undatedQazoBody" class="cal-undated-body">
@@ -436,7 +446,7 @@ function calendarMarkup(){
       <div class="cal-undated-grid">${PRAYERS.map(p=>{
        const done=attribution.undated[p.id]||0,disabled=hasQazoEstimate()&&evaluate(state).remaining[p.id]===0;
        const recent=undatedNotice?.id===p.id;
-       return `<button type="button" data-act="undatedQazo" data-prayer="${p.id}" class="${recent?'recent':''}" ${disabled?'disabled':''} aria-label="${p.name}: ${fmt(done)} ta sanasiz qazo qayd etilgan${disabled?'; qazo qolmagan':'; yana 1 ta qo‘shish'}"><strong>${p.name}</strong><small>${fmt(done)} ta qayd · ${disabled?'Qazo qolmagan':'+1 qo‘shish'}</small></button>`;
+       return `<button type="button" data-act="undatedQazo" data-prayer="${p.id}" class="${recent?'recent':''}" ${disabled?'disabled':''} aria-label="${p.name}: ${fmt(done)} ta sanasiz qazo qayd etilgan${disabled?'; qazo qolmagan':'; bosilganda yana bir qazo qayd etiladi'}"><strong>${p.name}</strong><small>${fmt(done)} ta qayd etilgan${disabled?' · Qazo qolmagan':''}</small></button>`;
       }).join('')}</div>
       ${undatedNotice?`<div class="cal-undated-success" role="status" aria-live="polite"><strong>✓ ${PRAYERS.find(p=>p.id===undatedNotice.id).name} — 1 ta qazo saqlandi!</strong><span>Shu namozdan jami ${fmt(attribution.undated[undatedNotice.id]||0)} ta sanasiz qazo qayd etilgan. Yana bossangiz, yana 1 ta qo‘shiladi.</span></div>`:''}
     </div>`:''}
@@ -750,7 +760,13 @@ document.addEventListener('click',e=>{
    if(Object.keys(delta).length===0){statusText='O‘zgarish yo‘q';render();return;}
    if(confirm('Boshlang‘ich qazo miqdorlarini yangilaysizmi?'))record('debt',delta);
  }
- if(act==='undo'){if(state.actions.length&&confirm('Oxirgi amal bekor qilinsinmi?'))commit({...state,actions:state.actions.slice(0,-1)},'Oxirgi amal bekor qilindi');}
+ if(act==='undo'){
+   if(state.actions.length&&confirm('Oxirgi amal bekor qilinsinmi?')){
+     if(commit({...state,actions:state.actions.slice(0,-1)},'Oxirgi amal bekor qilindi')){
+       undatedNotice=null;render();
+     }
+   }
+ }
  if(act==='export'){
    const blob=new Blob([JSON.stringify({...state,ownerName,dailyNamoz:dailyPrayers,exportedAt:new Date().toISOString()},null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`qazo-hisobim-${nowLocalDate()}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
  }
