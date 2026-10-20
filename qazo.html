@@ -155,7 +155,7 @@ function sum(o){return Object.values(o).reduce((a,b)=>a+b,0);}
 function evaluate(s){
   const debt=blank(),done=blank();
   for(const a of s.actions){
-    if(a.autoDebt===true)for(const [key,value] of Object.entries(a.delta))debt[key]+=value;
+    if(a.autoDebt===true||a.autoDebtUndo===true)for(const [key,value] of Object.entries(a.delta))debt[key]+=value;
     const target=a.type==='debt'?debt:done;
     for(const [key,value] of Object.entries(a.delta))target[key]+=value;
     if(IDS.some(k=>done[k]<0||debt[k]<0||done[k]>debt[k]))throw new Error('Hisob mos emas');
@@ -170,6 +170,7 @@ function validate(s){
     if(entries.length<1||entries.length>6)return false;
     if(entries.some(([k,v])=>!IDS.includes(k)||!Number.isSafeInteger(v)||Math.abs(v)>10000000||v===0))return false;
     if(a.autoDebt!==undefined&&(a.autoDebt!==true||a.type!=='done'||entries.some(([,v])=>v<=0)))return false;
+    if(a.autoDebtUndo!==undefined&&(a.autoDebtUndo!==true||a.type!=='done'||a.autoDebt!==undefined||entries.some(([,v])=>v>=0)))return false;
     if(a.qazoDate!==undefined&&(a.type!=='done'||!validStoredDay(a.qazoDate)))return false;
     if(a.on!==undefined&&!validStoredDay(a.on))return false;
   }
@@ -200,29 +201,8 @@ const DAILY_KEY='arafa_namoz_kundalik_v1';
 let calendarMode='daily',pendingDaily=null,qazoTarget='';
 let dailyPrayers=readDailyData();
 
-function calendarCounts(){
- const stacks=Object.fromEntries(IDS.map(id=>[id,[]]));
- for(const a of state.actions){
-  if(a.type!=='done')continue;
-  const on=/^\d{4}-\d{2}-\d{2}$/.test(a.on||'')?a.on:localDate(new Date(a.at));
-  for(const [id,n] of Object.entries(a.delta)){
-   const list=stacks[id];
-   if(n>0){list.push({on,n});continue;}
-   let undo=-n;
-   while(undo>0&&list.length){
-    const last=list[list.length-1],take=Math.min(undo,last.n);
-    last.n-=take;undo-=take;
-    if(last.n===0)list.pop();
-   }
-  }
- }
- const days={};
- for(const id of IDS)for(const item of stacks[id]){
-  const row=days[item.on]||(days[item.on]=blank());
-  row[id]+=item.n;
- }
- return days;
-}
+function calendarCounts(){return qazoAttribution().performed;}
+
 function validStoredDay(day){
  if(typeof day!=='string'||day.length!==10||day[4]!=='-'||day[7]!=='-')return false;
  const digits=day.slice(0,4)+day.slice(5,7)+day.slice(8,10);
@@ -250,24 +230,52 @@ function qazoAttribution(){
   if(a.type!=='done')continue;
   for(const [id,n] of Object.entries(a.delta)){
    const stack=stacks[id];
-   if(n>0){stack.push({date:validCalendarDay(a.qazoDate)?a.qazoDate:null,n});continue;}
+   if(n>0){stack.push({date:validStoredDay(a.qazoDate)?a.qazoDate:null,on:validStoredDay(a.on)?a.on:localDate(new Date(a.at)),n,autoDebt:!!a.autoDebt});continue;}
    let left=-n;
-   while(left>0&&stack.length){
-    const last=stack[stack.length-1],taken=Math.min(left,last.n);
-    last.n-=taken;left-=taken;
-    if(!last.n)stack.pop();
+   // Sana ko‘rsatilgan bekor qilish aynan shu eski sana qarzini qaytaradi.
+   if(validStoredDay(a.qazoDate)){
+    for(let i=stack.length-1;i>=0&&left>0;i--){
+     if(stack[i].date!==a.qazoDate)continue;
+     const take=Math.min(left,stack[i].n);
+     stack[i].n-=take;left-=take;
+     if(stack[i].n===0)stack.splice(i,1);
+    }
+   }else{
+    while(left>0&&stack.length){
+     const item=stack[stack.length-1],take=Math.min(left,item.n);
+     item.n-=take;left-=take;
+     if(item.n===0)stack.pop();
+    }
    }
   }
  }
- const days={},undated=blank();
+ const days={},undated=blank(),sources={},performed={};
  for(const id of IDS)for(const item of stacks[id]){
+  const byDay=performed[item.on]||(performed[item.on]=blank());byDay[id]+=item.n;
   if(!item.date){undated[id]+=item.n;continue;}
-  const date=days[item.date]||(days[item.date]=blank());
-  date[id]+=item.n;
+  const row=days[item.date]||(days[item.date]=blank());row[id]+=item.n;
+  const perDay=sources[item.date]||(sources[item.date]={});
+  perDay[id]={autoDebt:item.autoDebt};
  }
- return {days,undated};
+ return {days,undated,sources,performed};
 }
 
+function toggleDatedQazo(day,id){
+ if(!validCalendarDay(day)||!IDS.includes(id))return false;
+ const snapshot=qazoAttribution(),count=evaluate(state),existing=snapshot.days[day]?.[id]||0;
+ if(existing>0){
+   const original=snapshot.sources[day]?.[id];
+   if(!original)return false;
+   const action={type:'done',delta:{[id]:-1},at:new Date().toISOString(),on:nowLocalDate(),qazoDate:day,note:'Sana bo‘yicha qazo belgisi bekor qilindi'};
+   if(original.autoDebt)action.autoDebtUndo=true;
+   return commit({...state,actions:[...state.actions,action]},'Qazo belgisi olib tashlandi');
+ }
+ if(hasQazoEstimate()){
+   if(count.remaining[id]<=0){statusText='Bu namozdan qazo qolmagan';render();return false;}
+   return record('done',{[id]:1},'',day);
+ }
+ return recordNoEstimate(id,day);
+}
 function saveDailyPrayer(day,id,mark){
  if(!validCalendarDay(day)||!IDS.includes(id))return false;
  const nextDays={...dailyPrayers.days},row={...(nextDays[day]||{})};
