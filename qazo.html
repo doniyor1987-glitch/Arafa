@@ -145,6 +145,18 @@ html,body,button,a,summary,label{touch-action:manipulation}
 .cal-picker-months button{border:1px solid #dfeadf;min-height:43px;border-radius:10px;background:white;color:#2f5b43;font-size:13px;font-weight:650}
 .cal-picker-months button.picked{background:#e2f2e5;border-color:#8fbd9e;color:#165b39}
 .cal-picker-months button:disabled{opacity:.38}
+
+/* Sanasiz qazo: saqlangandan keyin panel ochiq qoladi va natija ko‘rinadi */
+.cal-undated-panel .cal-undated-toggle{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;padding:10px 2px;border:0;background:transparent;color:#315f45;font-size:13px;font-weight:800;text-align:left}
+.cal-undated-body{padding:4px 0 3px}
+.cal-undated-grid button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-height:62px;padding:8px 4px;line-height:1.25}
+.cal-undated-grid button strong{font-size:12px}
+.cal-undated-grid button small{font-size:10px;color:#698572;font-weight:600}
+.cal-undated-grid button.recent{background:#d9f1df;border-color:#66b984;color:#145b37}
+.cal-undated-grid button.recent small{color:#286747}
+.cal-undated-success{margin-top:11px;padding:11px 12px;background:#e5f6e8;border:1px solid #9fdaad;border-radius:11px;display:flex;flex-direction:column;gap:5px;color:#205b3c}
+.cal-undated-success strong{font-size:13px}
+.cal-undated-success span{font-size:12px;line-height:1.5}
 </style>
 </head>
 <body>
@@ -244,6 +256,7 @@ let calendarMonth=nowLocalDate().slice(0,7),calendarSelected=nowLocalDate();
 let calendarPickerOpen=false,calendarPickerYear=new Date().getFullYear();
 const DAILY_KEY='arafa_namoz_kundalik_v1';
 let calendarMode='daily',pendingDaily=null,qazoTarget='';
+let undatedOpen=false,undatedNotice=null;
 let dailyPrayers=readDailyData();
 
 function calendarCounts(){return qazoAttribution().performed;}
@@ -416,7 +429,18 @@ function calendarMarkup(){
   <div class="cal-days">${titles.map(t=>`<span class="cal-weekday">${t}</span>`).join('')}${slots.join('')}</div>
   <div class="cal-legend"><span><i class="cal-dot green"></i>6/6 — to‘liq</span><span><i class="cal-dot yellow"></i>1–5 — qisman</span>${!isDaily?'<span><i class="cal-dot gray"></i>Hisoblangan qazo davri</span>':''}<span>Nuqta yo‘q — qayd yo‘q</span></div>
   ${details}
-  ${!isDaily?`<details class="cal-undated-panel"><summary>Sanasiz qazo o‘qidim</summary><p>Qaysi eski sananing qazosi ekanini bilmasangiz, shu yerdan qayd eting.</p><div class="cal-undated-grid">${PRAYERS.map(p=>`<button type="button" data-act="undatedQazo" data-prayer="${p.id}" ${hasQazoEstimate()&&evaluate(state).remaining[p.id]===0?'disabled':''}>${p.name} +1</button>`).join('')}</div></details><p class="cal-undated">Sana biriktirilmagan qazolar: <b>${fmt(sum(attribution.undated))} ta</b></p>`:''}
+  ${!isDaily?`<div class="cal-undated-panel">
+    <button type="button" class="cal-undated-toggle" data-act="undatedToggle" aria-expanded="${undatedOpen}" aria-controls="undatedQazoBody"><span>Sanasiz qazo o‘qidim</span><span aria-hidden="true">${undatedOpen?'⌃':'⌄'}</span></button>
+    ${undatedOpen?`<div id="undatedQazoBody" class="cal-undated-body">
+      <p>O‘qigan qazo namozingizni bosing. Har bir bosish <b>1 ta qazo</b> qo‘shadi.</p>
+      <div class="cal-undated-grid">${PRAYERS.map(p=>{
+       const done=attribution.undated[p.id]||0,disabled=hasQazoEstimate()&&evaluate(state).remaining[p.id]===0;
+       const recent=undatedNotice?.id===p.id;
+       return `<button type="button" data-act="undatedQazo" data-prayer="${p.id}" class="${recent?'recent':''}" ${disabled?'disabled':''} aria-label="${p.name}: ${fmt(done)} ta sanasiz qazo qayd etilgan${disabled?'; qazo qolmagan':'; yana 1 ta qo‘shish'}"><strong>${p.name}</strong><small>${fmt(done)} ta qayd · ${disabled?'Qazo qolmagan':'+1 qo‘shish'}</small></button>`;
+      }).join('')}</div>
+      ${undatedNotice?`<div class="cal-undated-success" role="status" aria-live="polite"><strong>✓ ${PRAYERS.find(p=>p.id===undatedNotice.id).name} — 1 ta qazo saqlandi!</strong><span>Shu namozdan jami ${fmt(attribution.undated[undatedNotice.id]||0)} ta sanasiz qazo qayd etilgan. Yana bossangiz, yana 1 ta qo‘shiladi.</span></div>`:''}
+    </div>`:''}
+   </div><p class="cal-undated">Sana biriktirilmagan qazolar: <b>${fmt(sum(attribution.undated))} ta</b></p>`:''}
  </section>`;
 }
 
@@ -557,7 +581,7 @@ document.addEventListener('click',e=>{
    catch(_){alert('Ismni saqlab bo‘lmadi. Xotirani tekshiring.');}
    return;
  }
- if(act==='navigate'){selectedPrayer=null;pendingRoza=false;calendarPickerOpen=false;tab=b.dataset.tab;statusText='';render();window.scrollTo(0,0);return;}
+ if(act==='navigate'){selectedPrayer=null;pendingRoza=false;calendarPickerOpen=false;undatedNotice=null;tab=b.dataset.tab;statusText='';render();window.scrollTo(0,0);return;}
 
  if(act==='calendarType'){
    if(tab!=='home'||!['daily','qazo'].includes(b.dataset.value))return;
@@ -610,11 +634,17 @@ document.addEventListener('click',e=>{
    if(tab!=='home'||calendarMode!=='qazo'||day!==calendarSelected||!validCalendarDay(day)||!IDS.includes(p))return;
    toggleDatedQazo(day,p);return;
  }
+ if(act==='undatedToggle'){
+   if(tab!=='home'||calendarMode!=='qazo')return;
+   undatedOpen=!undatedOpen;
+   if(!undatedOpen)undatedNotice=null;
+   render();return;
+ }
  if(act==='undatedQazo'){
-   if(tab!=='home'||calendarMode!=='qazo'||!IDS.includes(p))return;
-   if(hasQazoEstimate()){
-     if(evaluate(state).remaining[p]>0)record('done',{[p]:1},'Sanasiz qazo o‘qildi');
-   }else recordNoEstimate(p);
+   if(tab!=='home'||calendarMode!=='qazo'||!undatedOpen||!IDS.includes(p))return;
+   if(hasQazoEstimate()&&evaluate(state).remaining[p]<=0)return;
+   const added=hasQazoEstimate()?record('done',{[p]:1},'Sanasiz qazo o‘qildi'):recordNoEstimate(p);
+   if(added){undatedOpen=true;undatedNotice={id:p};statusText='✓ '+PRAYERS.find(x=>x.id===p).name+' qazosi saqlandi';render();}
    return;
  }
  if(act==='rozaPrepare'){
