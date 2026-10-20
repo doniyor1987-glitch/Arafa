@@ -422,7 +422,7 @@ function history(){const rows=[...state.actions].reverse();return `<div class="s
 function settings(count){return `<div class="section-head"><h2>Sozlamalar va zaxira</h2></div>
  ${ownerSettings()}
  <div class="card"><h3>Maxfiylik</h3><p>Akkaunt yo‘q. Hisoblar faqat shu qurilmadagi ilova xotirasida turadi. Serverga yuborilmaydi. Boshqa odam ilovani ochsa, uning hisobi noldan boshlanadi.</p><div class="warning">iPhone xotirasi tozalansa yoki ilova ma’lumotlari o‘chirilsa, hisob yo‘qolishi mumkin. Muntazam <b>zaxira nusxa</b> saqlang.</div></div>
- <div class="card"><h3>Zaxira nusxa</h3><p>JSON faylni iPhone’ning Files dasturida saqlashingiz yoki boshqa telefoningizga ko‘chirishingiz mumkin. Zaxira faylni ommaga yubormang.</p><button class="big-btn" data-act="export">Zaxira nusxani yuklab olish</button><label class="big-btn secondary" style="display:flex;align-items:center;justify-content:center;cursor:pointer">Zaxiradan tiklash<input id="backupInput" type="file" accept=".json,application/json" hidden></label></div>
+ <div class="card"><h3>Zaxira nusxa</h3><p>JSON faylni iPhone’ning Files dasturida saqlashingiz yoki boshqa telefoningizga ko‘chirishingiz mumkin. Zaxira faylni ommaga yubormang. Ushbu zaxirada qazo namozlari, kundalik namoz kalendari va ism bor; ro‘za hisobi hozircha kirmaydi.</p><button class="big-btn" data-act="export">Zaxira nusxani yuklab olish</button><label class="big-btn secondary" style="display:flex;align-items:center;justify-content:center;cursor:pointer">Zaxiradan tiklash<input id="backupInput" type="file" accept=".json,application/json" hidden></label></div>
  <div class="card"><h3>Ma’lumotlarni tozalash</h3><p>${hasQazoEstimate()?`Jami ${fmt(count.total)} ta qazo, ${fmt(count.completed)} ta ado etilgan qazo qaydi mavjud.`:`Hisob kiritilmagan. ${fmt(count.completed)} ta o‘qilgan namoz qayd etilgan.`}</p><button class="big-btn danger" data-act="reset">Barcha hisoblarni o‘chirish</button></div>`;}
 function render(){const count=evaluate(state);$('app').innerHTML=`<div class="arafa-bar"><a href="./" aria-label="Arafa zikr va duolar sahifasiga qaytish">← Bosh sahifa</a></div><header class="topbar"><div class="brand"><div class="emblem" aria-hidden="true">☾</div><div class="brand-text"><strong>Qazo namozlarim hisobi</strong>${ownerName?`<span class="owner-display">👤 ${safeHTML(ownerName)}</span>`:''}</div></div></header><main>${tab==='home'?home(count):tab==='manage'?manage(count):tab==='history'?history():settings(count)}</main><div class="status" role="status">${statusText}</div><nav class="nav" aria-label="Asosiy menyu">${[['home','⌂','Asosiy'],['manage','⊕','Hisob'],['history','◷','Tarix'],['settings','⚙','Sozlama']].map(([t,ico,label])=>`<button data-act="navigate" data-tab="${t}" class="${tab===t?'active':''}" ${tab===t?'aria-current="page"':''}><strong>${ico}</strong><span>${label}</span></button>`).join('')}</nav>`;}
 function ensureAction(type,keys,n){const count=evaluate(state);if(!Number.isSafeInteger(n)||n<=0||n>10000000){alert('1 dan 10 milliongacha butun son kiriting.');return;}
@@ -604,7 +604,7 @@ document.addEventListener('click',e=>{
  }
  if(act==='undo'){if(state.actions.length&&confirm('Oxirgi amal bekor qilinsinmi?'))commit({...state,actions:state.actions.slice(0,-1)},'Oxirgi amal bekor qilindi');}
  if(act==='export'){
-   const blob=new Blob([JSON.stringify({...state,ownerName,exportedAt:new Date().toISOString()},null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`qazo-hisobim-${nowLocalDate()}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
+   const blob=new Blob([JSON.stringify({...state,ownerName,dailyNamoz:dailyPrayers,exportedAt:new Date().toISOString()},null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`qazo-hisobim-${nowLocalDate()}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
  }
  if(act==='reset'){if(confirm('Rostdan ham HAMMA hisoblarni o‘chirmoqchimisiz?')&&confirm('Bu amaldan ortga qaytib bo‘lmaydi. Zaxira olganingizni tekshiring.'))commit(newState(),'Hisob tozalandi');}
 });
@@ -620,10 +620,18 @@ document.addEventListener('change',async e=>{
  if(e.target?.id!=='backupInput')return;
  const f=e.target.files?.[0];if(!f)return;
  try{if(f.size>20000000)throw new Error('Fayl juda katta');const obj=JSON.parse(await f.text());if(!validate(obj))throw new Error('Zaxira fayl noto‘g‘ri yoki hisob izchil emas');
+ if(obj.dailyNamoz!==undefined&&!validateDailyData(obj.dailyNamoz))throw new Error('Kundalik namoz kalendari zaxirasi noto‘g‘ri.');
  if(confirm('Hozirgi hisobingizni zaxira fayldagi hisob bilan ALMASHTIRASIZMI? Avval o‘zingiznikidan zaxira nusxa olish tavsiya qilinadi.')){
-   if(commit({version:1,actions:obj.actions},'Zaxiradan tiklandi')&&typeof obj.ownerName==='string'){
-     const saved=normalizeOwnerName(obj.ownerName);
-     if(saved){try{localStorage.setItem(OWNER_NAME_KEY,saved);ownerName=saved;render();}catch(_){alert('Namoz hisobi tiklandi, lekin ismni saqlashda xatolik bo‘ldi.');}}
+   if(commit({version:1,actions:obj.actions},'Zaxiradan tiklandi')){
+     if(obj.dailyNamoz!==undefined){
+       try{localStorage.setItem(DAILY_KEY,JSON.stringify(obj.dailyNamoz));dailyPrayers=obj.dailyNamoz;}
+       catch(_){alert('Qazo qaydlari tiklandi, ammo kundalik kalendar saqlanmadi.');}
+     }
+     if(typeof obj.ownerName==='string'){
+       const saved=normalizeOwnerName(obj.ownerName);
+       if(saved){try{localStorage.setItem(OWNER_NAME_KEY,saved);ownerName=saved;}catch(_){alert('Ism saqlanmadi.');}}
+     }
+     pendingDaily=null;qazoTarget='';render();
    }
  }
  }catch(err){alert('Faylni o‘qib bo‘lmadi: '+err.message);}finally{e.target.value='';}
