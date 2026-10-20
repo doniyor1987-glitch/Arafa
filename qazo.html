@@ -111,6 +111,22 @@
 .qazo-date-banner span{font-size:13px;color:#1e553f}
 .qazo-date-banner button{font-size:12px;border:0;background:#e8eee8;color:#3a6b50;border-radius:9px;padding:9px}
 @media(max-width:420px){.cal-tabs button{font-size:12px}.cal-daily-btn{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:4px;min-height:59px}}
+
+/* Kalenderlar dashboardning birinchi qismida: belgilash bevosita tugmada. */
+.qazo-calendar{margin-top:3px;margin-bottom:19px}
+.qazo-calendar + .hero{margin-top:4px}
+.cal-daily-btn{transition:background .14s,border-color .14s,color .14s;cursor:pointer}
+.cal-daily-btn.read{background:#daf2df;border-color:#80c99b;color:#165c38}
+.cal-daily-btn.read small{color:#17633b;font-weight:800}
+.cal-daily-btn:focus-visible{outline:3px solid #408d5c;outline-offset:2px}
+.cal-daily-btn:disabled{opacity:.42;cursor:not-allowed}
+.cal-undated-panel{border-top:1px solid #e0ebe2;margin-top:15px;padding-top:12px}
+.cal-undated-panel summary{font-size:12px;color:#315f45;font-weight:750;cursor:pointer;padding:7px 0}
+.cal-undated-panel p{font-size:12px!important;color:#718573!important;margin:9px 0!important}
+.cal-undated-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.cal-undated-grid button{min-height:39px;border:1px solid #d7e4d8;background:#f2f8f2;color:#285d42;border-radius:9px;font-size:12px;font-weight:700}
+.cal-undated-grid button:disabled{opacity:.4}
+@media(max-width:370px){.cal-undated-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 </head>
 <body>
@@ -325,7 +341,7 @@ function calendarMarkup(){
   </div>`;
  }
  return `<section class="card qazo-calendar"><div class="cal-tabs" role="group" aria-label="Kalendar turi"><button type="button" class="${isDaily?'chosen':''}" data-act="calendarType" data-value="daily" aria-pressed="${isDaily}">Namoz kalendarim</button><button type="button" class="${!isDaily?'chosen':''}" data-act="calendarType" data-value="qazo" aria-pressed="${!isDaily}">Qazo kalendarim</button></div>
-  <p class="cal-explanation">${isDaily?'Har kuni odatiy namozlarni belgilang. Qazo hisobidan ayrilmaydi.':'Bu yerda qazosini yopgan ESKI sanalar belgilanadi. Sanasiz qazo o‘qish ham mumkin.'}</p>
+  <p class="cal-explanation">${isDaily?'Kunni tanlang va o‘qilgan namozni bosing. Qayta bossangiz, belgi o‘chadi. Qazo hisobiga ta’sir qilmaydi.':'Kunni tanlang va qazosini yopgan namozni bosing. Qayta bossangiz, belgi bekor bo‘ladi.'}</p>
   <div class="cal-switch"><button type="button" data-act="calendarPrev" aria-label="Oldingi oy">‹</button><strong>${heading}</strong><button type="button" data-act="calendarNext" aria-label="Keyingi oy">›</button></div>
   <div class="cal-days">${titles.map(t=>`<span class="cal-weekday">${t}</span>`).join('')}${slots.join('')}</div>
   <div class="cal-legend"><span><i class="cal-dot green"></i>6/6 — to‘liq</span><span><i class="cal-dot yellow"></i>1–5 — qisman</span><span>Nuqta yo‘q — qayd yo‘q</span></div>
