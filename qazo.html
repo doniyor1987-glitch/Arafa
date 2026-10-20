@@ -170,6 +170,8 @@ function validate(s){
     if(entries.length<1||entries.length>6)return false;
     if(entries.some(([k,v])=>!IDS.includes(k)||!Number.isSafeInteger(v)||Math.abs(v)>10000000||v===0))return false;
     if(a.autoDebt!==undefined&&(a.autoDebt!==true||a.type!=='done'||entries.some(([,v])=>v<=0)))return false;
+    if(a.qazoDate!==undefined&&(a.type!=='done'||!validStoredDay(a.qazoDate)))return false;
+    if(a.on!==undefined&&!validStoredDay(a.on))return false;
   }
   try {evaluate(s);return true;} catch(_){return false;}
 }
@@ -338,6 +340,7 @@ function rozaDashboard(){
 }
 let selectedPrayer=null,pendingRoza=false;
 function home(count){
+const credited=qazoTarget?(qazoAttribution().days[qazoTarget]||{}):{};
 return `${hero(count)}
 <div class="qazo-date-pref">
  ${qazoTarget?`<div class="qazo-date-banner"><span>Qazo sanasi: <b>${qazoTarget}</b></span><button type="button" data-act="clearQazoDate">Sanasiz davom etish ×</button></div>`:`<p class="qazo-no-date">Sana ko‘rsatilmagan — qazo umumiy hisobga yoziladi</p>`}
@@ -346,7 +349,7 @@ return `${hero(count)}
 <div class="section-head"><h2>Namozlar</h2><span>O‘qilganini belgilash</span></div>
 <div class="prayer-list">${PRAYERS.map(p=>{
   const planned=hasQazoEstimate(),remaining=count.remaining[p.id],open=selectedPrayer===p.id;
-  const taken=!!qazoTarget&&(qazoAttribution().days[qazoTarget]?.[p.id]||0)>0;
+  const taken=!!qazoTarget&&(credited[p.id]||0)>0;
   return `<div class="prayer-row${open?' opened':''}">
     <button type="button" class="prayer-select" data-act="selectPrayer" data-prayer="${p.id}" aria-expanded="${open}" aria-controls="prayer-detail-${p.id}" ${(planned&&remaining===0)||taken?'disabled':''}>
       <span class="prayer-label"><strong>${p.name}</strong><small>${fmt(count.done[p.id])} o‘qilgan</small></span>
