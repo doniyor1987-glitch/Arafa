@@ -211,7 +211,11 @@ function record(type,delta,note,qazoDate){
   if(type==='done'&&qazoDate&&validCalendarDay(qazoDate))action.qazoDate=qazoDate;
   return commit({...state,actions:[...state.actions,action]},'Hisob saqlandi');
 }
-function actionName(a){const p=Object.keys(a.delta);const name=p.length===6?'Barcha namozlar':p.map(k=>PRAYERS.find(x=>x.id===k)?.name||k).join(', ');return name+(a.qazoDate?' · '+a.qazoDate+' qazosi':'');}
+function actionName(a){
+ if(a.type==='range')return a.coverage?a.coverage.start+' — '+a.coverage.end:'Aniq sana belgilanmagan';
+ const p=Object.keys(a.delta),name=p.length===6?'Barcha namozlar':p.map(k=>PRAYERS.find(x=>x.id===k)?.name||k).join(', ');
+ return name+(a.qazoDate?' · '+a.qazoDate+' qazosi':'')+(a.coverage?' · '+a.coverage.start+' — '+a.coverage.end:'');
+}
 function timeLabel(iso){return new Date(iso).toLocaleString('uz-UZ',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});}
 
 function hasQazoEstimate(){return state.actions.some(a=>a.type==='debt');}
@@ -488,7 +492,13 @@ function manage(count){
  </div>
  <div class="card"><h3>${calcType==='namoz'?'Namoz':'Ro‘za'} hisobi</h3>${calcType==='namoz'?`<p>Jami: ${fmt(count.total)} · O‘qilgan: ${fmt(count.completed)} · Qolgan: <b>${fmt(count.total-count.completed)}</b></p><button class="big-btn secondary" data-act="navigate" data-tab="home">Dashboardga qaytish →</button>`:`<p>Jami: ${fmt(roza.debt)} · Tutilgan: ${fmt(roza.done)} · Qolgan: <b>${fmt(roza.debt-roza.done)}</b></p><div class="calc-roza-actions"><button data-act="rozaMinus" ${roza.done===0?'disabled':''}>−</button><b>${fmt(roza.done)} tutilgan</b><button data-act="rozaPlus" ${roza.done===roza.debt?'disabled':''}>+</button></div>`}</div>`;
 }
-function history(){const rows=[...state.actions].reverse();return `<div class="section-head"><h2>Harakatlar tarixi</h2><span>${fmt(rows.length)} ta yozuv</span></div><div class="card">${rows.length?rows.slice(0,150).map(a=>`<div class="history-row"><div><div class="history-title">${a.type==='debt'?'Hisobga qo‘shildi / tuzatildi':'O‘qildi / tuzatildi'} · ${actionName(a)}</div><div class="history-sub">${timeLabel(a.at)}</div></div><div class="amount ${a.type==='debt'?'add':'done'}">${sum(a.delta)>0?'+':''}${fmt(sum(a.delta))}</div></div>`).join(''):'<div class="muted">Hozircha yozuv yo‘q.</div>'}</div><button class="big-btn secondary" data-act="undo" ${!rows.length?'disabled':''}>Oxirgi amalni bekor qilish</button><p class="caption">Xato kiritilgan oxirgi amalga qaytishingiz mumkin. Boshqa amalni tuzatish uchun Hisob bo‘limidan foydalaning.</p>`;}
+function history(){
+ const rows=[...state.actions].reverse();
+ return `<div class="section-head"><h2>Harakatlar tarixi</h2><span>${fmt(rows.length)} ta yozuv</span></div>
+ <div class="card">${rows.length?rows.slice(0,150).map(a=>`<div class="history-row"><div><div class="history-title">${a.type==='debt'?'Hisobga qo‘shildi / tuzatildi':a.type==='range'?'Hisob davri yangilandi':'O‘qildi / tuzatildi'} · ${actionName(a)}</div><div class="history-sub">${timeLabel(a.at)}</div></div><div class="amount ${a.type==='debt'?'add':'done'}">${a.type==='range'?'—':(sum(a.delta)>0?'+':'')+fmt(sum(a.delta))}</div></div>`).join(''):'<div class="muted">Hozircha yozuv yo‘q.</div>'}</div>
+ <button class="big-btn secondary" data-act="undo" ${!rows.length?'disabled':''}>Oxirgi amalni bekor qilish</button>
+ <p class="caption">Xato kiritilgan oxirgi amalga qaytishingiz mumkin. Boshqa amalni tuzatish uchun Hisob bo‘limidan foydalaning.</p>`;
+}
 function settings(count){return `<div class="section-head"><h2>Sozlamalar va zaxira</h2></div>
  ${ownerSettings()}
  <div class="card"><h3>Maxfiylik</h3><p>Akkaunt yo‘q. Hisoblar faqat shu qurilmadagi ilova xotirasida turadi. Serverga yuborilmaydi. Boshqa odam ilovani ochsa, uning hisobi noldan boshlanadi.</p><div class="warning">iPhone xotirasi tozalansa yoki ilova ma’lumotlari o‘chirilsa, hisob yo‘qolishi mumkin. Muntazam <b>zaxira nusxa</b> saqlang.</div></div>
@@ -615,7 +625,17 @@ document.addEventListener('click',e=>{
    if(calcType==='namoz'){
      const c=evaluate(state),delta={};
      for(const p of PRAYERS){if(calcPreview.amount<c.done[p.id]){alert(p.name+' uchun oldin ado etilgan miqdor yangi hisobdan ko‘p.');return;}const d=calcPreview.amount-c.debt[p.id];if(d!==0)delta[p.id]=d;}
-     if(Object.keys(delta).length&&!record('debt',delta,'Kalkulyator bilan yangilandi'))return;
+     let coverage=null;
+     if(calcMode==='date'){
+       const endInclusive=lastInclusiveDate(namozDraft.calcTo);
+       if(!validCalendarDay(namozDraft.calcFrom)||!validCalendarDay(endInclusive)||endInclusive<namozDraft.calcFrom){
+         alert('Qazo davri sanalari noto‘g‘ri.');return;
+       }
+       coverage={start:namozDraft.calcFrom,end:endInclusive};
+     }
+     const stamp={at:new Date().toISOString(),note:'Kalkulyator bilan yangilandi',coverage};
+     const act=Object.keys(delta).length?{type:'debt',delta,...stamp}:{type:'range',...stamp};
+     if(!commit({...state,actions:[...state.actions,act]},'Hisob saqlandi'))return;
    }else{
      if(calcPreview.amount<roza.done){alert('Tutilgan ro‘za miqdoridan kam hisob saqlanmaydi.');return;}
      const next={...roza,debt:calcPreview.amount};
