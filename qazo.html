@@ -162,6 +162,34 @@ html,body,button,a,summary,label{touch-action:manipulation}
 .cal-quick-undo-btn{width:100%;min-height:45px;border:1px solid #d5e3d7;border-radius:11px;color:#305e45;background:#f4f8f3;font-size:13px;font-weight:750}
 .cal-quick-undo-btn:disabled{opacity:.45}
 .cal-quick-undo p{margin:8px 2px 0;color:#728673;font-size:11px;line-height:1.45;overflow-wrap:anywhere}
+
+/* Mavzular faqat fonni o‘zgartiradi; kartalar oq va kalendar belgilarining ranglari o‘zgarmas */
+html{background-color:var(--bg);background-image:var(--theme-scene,none);background-repeat:no-repeat;background-size:cover;min-height:100%}
+html[data-theme="default"]{--bg:#f6f7f2;--theme-scene:none}
+html[data-theme="men"]{--bg:#e5edf2;--theme-scene:radial-gradient(ellipse at 94% 5%,rgba(70,99,127,.34),transparent 39%),radial-gradient(ellipse at 4% 67%,rgba(104,134,155,.23),transparent 46%),linear-gradient(155deg,#ecf2f6,#dce6ee)}
+html[data-theme="women"]{--bg:#f9edf6;--theme-scene:radial-gradient(ellipse at 95% 5%,rgba(198,151,210,.3),transparent 42%),radial-gradient(ellipse at 0% 74%,rgba(243,166,192,.28),transparent 44%),linear-gradient(155deg,#fff6fa,#f0e8f8)}
+html[data-theme="spring"]{--bg:#edf6e7;--theme-scene:radial-gradient(circle at 89% 5%,rgba(249,173,205,.34),transparent 29%),radial-gradient(ellipse at 3% 85%,rgba(123,187,117,.31),transparent 48%),linear-gradient(150deg,#f9faed,#e6f3dd)}
+html[data-theme="summer"]{--bg:#fdf3db;--theme-scene:radial-gradient(circle at 92% 6%,rgba(255,191,83,.4),transparent 35%),radial-gradient(ellipse at 1% 72%,rgba(111,188,227,.27),transparent 48%),linear-gradient(160deg,#fff8e6,#e4f4f5)}
+html[data-theme="autumn"]{--bg:#f4e9d9;--theme-scene:radial-gradient(ellipse at 89% 10%,rgba(205,115,55,.27),transparent 44%),radial-gradient(ellipse at 0% 85%,rgba(174,126,70,.29),transparent 47%),linear-gradient(145deg,#fff7e9,#ead8c0)}
+html[data-theme="winter"]{--bg:#eaf3fa;--theme-scene:radial-gradient(ellipse at 95% 7%,rgba(135,174,216,.35),transparent 43%),radial-gradient(ellipse at 2% 87%,rgba(178,213,231,.3),transparent 48%),linear-gradient(150deg,#fcfdff,#dbeaf6)}
+.theme-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:13px}
+.theme-choice{display:flex;flex-direction:column;gap:8px;padding:8px;border:1.5px solid #dce6df;border-radius:13px;background:#fff;text-align:left;min-width:0}
+.theme-choice.active{border-color:#348f60;box-shadow:0 0 0 2px rgba(52,143,96,.14)}
+.theme-choice:focus-visible{outline:3px solid #38875f;outline-offset:2px}
+.theme-swatch{display:block;height:61px;width:100%;border-radius:9px;overflow:hidden;position:relative;border:1px solid rgba(0,0,0,.05)}
+.theme-swatch:after{content:"";position:absolute;width:62%;height:36px;left:19%;top:13px;border-radius:9px;background:rgba(255,255,255,.75);box-shadow:0 4px 10px rgba(32,56,51,.08)}
+.theme-swatch-default{background:linear-gradient(140deg,#f6f7f2,#e8efe4)}
+.theme-swatch-men{background:radial-gradient(circle at 85% 10%,#8da9c0,transparent 55%),linear-gradient(130deg,#e5edf2,#a7bccd)}
+.theme-swatch-women{background:radial-gradient(circle at 90% 10%,#e9b0da,transparent 53%),linear-gradient(130deg,#fff3f8,#dfc6f0)}
+.theme-swatch-spring{background:radial-gradient(circle at 84% 8%,#f6bfd4,transparent 50%),linear-gradient(120deg,#f4fbe7,#abd6a2)}
+.theme-swatch-summer{background:radial-gradient(circle at 89% 4%,#ffc96f,transparent 53%),linear-gradient(135deg,#fff8df,#a8d9e7)}
+.theme-swatch-autumn{background:radial-gradient(circle at 80% 7%,#d79a62,transparent 55%),linear-gradient(130deg,#fff3d9,#d6aa7f)}
+.theme-swatch-winter{background:radial-gradient(circle at 85% 5%,#c0d5eb,transparent 55%),linear-gradient(145deg,#fff,#b7d9ef)}
+.theme-choice-label{display:flex;flex-direction:column;gap:3px;padding:0 3px 3px}
+.theme-choice-label strong{font-size:13px;color:#274b38}
+.theme-choice-label small{font-size:11px;color:#76897b;line-height:1.3}
+.theme-settings .theme-footnote{margin-top:11px;font-size:11px}
+@media(max-width:360px){.theme-grid{gap:7px}.theme-choice{padding:6px}.theme-swatch{height:52px}}
 </style>
 </head>
 <body>
@@ -172,6 +200,32 @@ html,body,button,a,summary,label{touch-action:manipulation}
 /* Qazo namozlarim hisobi — account-free, offline-first PWA. No data is sent to a server. */
 'use strict';
 const KEY = 'qazo_hisobim_local_v1';
+const THEME_KEY='arafa_namoz_theme_v1';
+const THEMES=[
+ {id:'default',name:'Asosiy',description:'Sokin och fon'},
+ {id:'men',name:'Erkaklar',description:'Grafit va ko‘k'},
+ {id:'women',name:'Ayollar',description:'Lavanda va pushti'},
+ {id:'spring',name:'Bahor',description:'Mayin yashil va gullar'},
+ {id:'summer',name:'Yoz',description:'Quyosh va osmon'},
+ {id:'autumn',name:'Kuz',description:'Oltin va yaproqlar'},
+ {id:'winter',name:'Qish',description:'Muzrang va qor'}
+];
+function readTheme(){
+ try{const saved=localStorage.getItem(THEME_KEY);return THEMES.some(x=>x.id===saved)?saved:'default';}catch(_){return 'default';}
+}
+let currentTheme=readTheme();
+function applyTheme(){document.documentElement.setAttribute('data-theme',currentTheme);}
+applyTheme();
+function themeSettings(){
+ return `<div class="card theme-settings"><h3>Fon mavzusi</h3>
+ <p>O‘zingizga yoqqan fonni tanlang. Tanlov shu qurilmada saqlanadi.</p>
+ <div class="theme-grid" role="group" aria-label="Fon mavzusini tanlash">${THEMES.map(t=>`<button type="button" class="theme-choice${currentTheme===t.id?' active':''}" data-act="setTheme" data-theme="${t.id}" aria-pressed="${currentTheme===t.id}">
+   <span class="theme-swatch theme-swatch-${t.id}" aria-hidden="true"><i></i></span>
+   <span class="theme-choice-label"><strong>${t.name}${currentTheme===t.id?' ✓':''}</strong><small>${t.description}</small></span>
+  </button>`).join('')}</div>
+ <p class="caption theme-footnote">Fon o‘zgaradi. Kalendar nuqtalarining ma’nosi va rangi o‘zgarmaydi.</p></div>`;
+}
+
 const PRAYERS = [
   {id:'bomdod',name:'Bomdod',rakat:2},
   {id:'peshin',name:'Peshin',rakat:4},
@@ -567,8 +621,9 @@ function history(){
 }
 function settings(count){return `<div class="section-head"><h2>Sozlamalar va zaxira</h2></div>
  ${ownerSettings()}
+ ${themeSettings()}
  <div class="card"><h3>Maxfiylik</h3><p>Akkaunt yo‘q. Hisoblar faqat shu qurilmadagi ilova xotirasida turadi. Serverga yuborilmaydi. Boshqa odam ilovani ochsa, uning hisobi noldan boshlanadi.</p><div class="warning">iPhone xotirasi tozalansa yoki ilova ma’lumotlari o‘chirilsa, hisob yo‘qolishi mumkin. Muntazam <b>zaxira nusxa</b> saqlang.</div></div>
- <div class="card"><h3>Zaxira nusxa</h3><p>JSON faylni iPhone’ning Files dasturida saqlashingiz yoki boshqa telefoningizga ko‘chirishingiz mumkin. Zaxira faylni ommaga yubormang. Ushbu zaxirada qazo namozlari, kundalik namoz kalendari va ism bor; ro‘za hisobi hozircha kirmaydi.</p><button class="big-btn" data-act="export">Zaxira nusxani yuklab olish</button><label class="big-btn secondary" style="display:flex;align-items:center;justify-content:center;cursor:pointer">Zaxiradan tiklash<input id="backupInput" type="file" accept=".json,application/json" hidden></label></div>
+ <div class="card"><h3>Zaxira nusxa</h3><p>JSON faylni iPhone’ning Files dasturida saqlashingiz yoki boshqa telefoningizga ko‘chirishingiz mumkin. Zaxira faylni ommaga yubormang. Ushbu zaxirada qazo namozlari, kundalik namoz kalendari, ism va tanlangan fon mavzusi bor; ro‘za hisobi hozircha kirmaydi.</p><button class="big-btn" data-act="export">Zaxira nusxani yuklab olish</button><label class="big-btn secondary" style="display:flex;align-items:center;justify-content:center;cursor:pointer">Zaxiradan tiklash<input id="backupInput" type="file" accept=".json,application/json" hidden></label></div>
  <div class="card"><h3>Ma’lumotlarni tozalash</h3><p>${hasQazoEstimate()?`Jami ${fmt(count.total)} ta qazo, ${fmt(count.completed)} ta ado etilgan qazo qaydi mavjud.`:`Hisob kiritilmagan. ${fmt(count.completed)} ta o‘qilgan namoz qayd etilgan.`}</p><button class="big-btn danger" data-act="reset">Barcha hisoblarni o‘chirish</button></div>`;}
 function render(){const count=evaluate(state);$('app').innerHTML=`<div class="arafa-bar"><a href="./" aria-label="Arafa zikr va duolar sahifasiga qaytish">← Bosh sahifa</a></div><header class="topbar"><div class="brand"><div class="emblem" aria-hidden="true">☾</div><div class="brand-text"><strong>Namoz kalendarim</strong>${ownerName?`<span class="owner-display">👤 ${safeHTML(ownerName)}</span>`:''}</div></div></header><main>${tab==='home'?home(count):tab==='manage'?manage(count):tab==='history'?history():settings(count)}</main><div class="status" role="status">${statusText}</div><nav class="nav" aria-label="Asosiy menyu">${[['home','⌂','Asosiy'],['manage','⊕','Hisob'],['history','◷','Tarix'],['settings','⚙','Sozlama']].map(([t,ico,label])=>`<button data-act="navigate" data-tab="${t}" class="${tab===t?'active':''}" ${tab===t?'aria-current="page"':''}><strong>${ico}</strong><span>${label}</span></button>`).join('')}</nav>`;}
 function ensureAction(type,keys,n){const count=evaluate(state);if(!Number.isSafeInteger(n)||n<=0||n>10000000){alert('1 dan 10 milliongacha butun son kiriting.');return;}
@@ -587,6 +642,18 @@ document.addEventListener('click',e=>{
    if(!next){alert('Ismingizni kiriting.');field?.focus();return;}
    try{localStorage.setItem(OWNER_NAME_KEY,next);ownerName=next;statusText='Ism saqlandi';render();}
    catch(_){alert('Ismni saqlab bo‘lmadi. Xotirani tekshiring.');}
+   return;
+ }
+ if(act==='setTheme'){
+   const next=b.dataset.theme,choice=THEMES.find(x=>x.id===next);
+   if(tab!=='settings'||!choice)return;
+   try{
+     localStorage.setItem(THEME_KEY,next);
+     currentTheme=next;
+     applyTheme();
+     statusText='Fon mavzusi saqlandi: '+choice.name;
+     render();
+   }catch(_){alert('Fon mavzusini saqlashda xatolik yuz berdi.');}
    return;
  }
  if(act==='navigate'){selectedPrayer=null;pendingRoza=false;calendarPickerOpen=false;undatedNotice=null;tab=b.dataset.tab;statusText='';render();window.scrollTo(0,0);return;}
@@ -766,7 +833,7 @@ document.addEventListener('click',e=>{
    }
  }
  if(act==='export'){
-   const blob=new Blob([JSON.stringify({...state,ownerName,dailyNamoz:dailyPrayers,exportedAt:new Date().toISOString()},null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`qazo-hisobim-${nowLocalDate()}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
+   const blob=new Blob([JSON.stringify({...state,ownerName,dailyNamoz:dailyPrayers,theme:currentTheme,exportedAt:new Date().toISOString()},null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`qazo-hisobim-${nowLocalDate()}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
  }
  if(act==='reset'){if(confirm('Rostdan ham HAMMA hisoblarni o‘chirmoqchimisiz?')&&confirm('Bu amaldan ortga qaytib bo‘lmaydi. Zaxira olganingizni tekshiring.'))commit(newState(),'Hisob tozalandi');}
 });
@@ -783,6 +850,7 @@ document.addEventListener('change',async e=>{
  const f=e.target.files?.[0];if(!f)return;
  try{if(f.size>20000000)throw new Error('Fayl juda katta');const obj=JSON.parse(await f.text());if(!validate(obj))throw new Error('Zaxira fayl noto‘g‘ri yoki hisob izchil emas');
  if(obj.dailyNamoz!==undefined&&!validateDailyData(obj.dailyNamoz))throw new Error('Kundalik namoz kalendari zaxirasi noto‘g‘ri.');
+ if(obj.theme!==undefined&&!THEMES.some(t=>t.id===obj.theme))throw new Error('Zaxira fayldagi fon mavzusi noto‘g‘ri.');
  if(confirm('Hozirgi hisobingizni zaxira fayldagi hisob bilan ALMASHTIRASIZMI? Avval o‘zingiznikidan zaxira nusxa olish tavsiya qilinadi.')){
    if(commit({version:1,actions:obj.actions},'Zaxiradan tiklandi')){
      if(obj.dailyNamoz!==undefined){
@@ -792,6 +860,10 @@ document.addEventListener('change',async e=>{
      if(typeof obj.ownerName==='string'){
        const saved=normalizeOwnerName(obj.ownerName);
        if(saved){try{localStorage.setItem(OWNER_NAME_KEY,saved);ownerName=saved;}catch(_){alert('Ism saqlanmadi.');}}
+     }
+     if(obj.theme!==undefined){
+       try{localStorage.setItem(THEME_KEY,obj.theme);currentTheme=obj.theme;applyTheme();}
+       catch(_){alert('Fon mavzusini tiklab bo‘lmadi.');}
      }
      pendingDaily=null;qazoTarget='';render();
    }
