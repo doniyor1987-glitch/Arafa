@@ -190,6 +190,54 @@ html[data-theme="winter"]{--bg:#eaf3fa;--theme-scene:radial-gradient(ellipse at 
 .theme-choice-label small{font-size:11px;color:#76897b;line-height:1.3}
 .theme-settings .theme-footnote{margin-top:11px;font-size:11px}
 @media(max-width:360px){.theme-grid{gap:7px}.theme-choice{padding:6px}.theme-swatch{height:52px}}
+
+/* Naqshli fonlar: SVG ornamentlar matn ostida, tegishlarni ushlamaydi */
+.theme-defs{position:absolute;width:0;height:0;overflow:hidden}
+.theme-ornaments{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+.app-shell{position:relative;z-index:1}
+.theme-ornament{position:absolute;display:none;width:clamp(145px,23vw,270px);height:auto;filter:drop-shadow(0 6px 12px rgba(32,62,69,.045));opacity:.55}
+.theme-ornament.decor-left{left:max(-86px,calc((100vw - 950px)/2));top:105px;transform:rotate(-15deg)}
+.theme-ornament.decor-right{right:max(-85px,calc((100vw - 950px)/2));bottom:50px;transform:rotate(19deg) scale(.9)}
+html[data-theme="men"] .decor-men,
+html[data-theme="women"] .decor-women,
+html[data-theme="spring"] .decor-spring,
+html[data-theme="summer"] .decor-summer,
+html[data-theme="autumn"] .decor-autumn,
+html[data-theme="winter"] .decor-winter{display:block}
+html[data-theme="winter"] .theme-ornament{opacity:.64}
+html[data-theme="women"] .theme-ornament{opacity:.6}
+html[data-theme="autumn"] .theme-ornament{opacity:.7}
+/* Sarlavhada har bir mavzu uchun kichik ko‘rinadigan naqsh */
+.topbar{position:relative}
+.topbar .brand{position:relative;z-index:1}
+.theme-header-art{position:absolute;top:0;right:1px;width:74px;height:72px;opacity:.42;pointer-events:none;overflow:hidden}
+.theme-header-art svg{width:100%;height:100%;transform:rotate(9deg) scale(1.6) translate(2px,-2px)}
+html[data-theme="default"] .theme-header-art{display:none}
+html[data-theme="autumn"] .theme-header-art{opacity:.55}
+/* Tema kartochkasida haqiqiy ornamentning kichik eskizi */
+.theme-swatch-art{position:absolute;z-index:2;right:-6px;top:-22px;width:78px;height:112px;transform:rotate(10deg);pointer-events:none;opacity:.78}
+.theme-swatch:after{z-index:1}
+.theme-choice.active .theme-swatch-art{opacity:.95}
+/* Qishda bloklarning yuqori chetida yengil qor uyumi */
+html[data-theme="winter"] .card,
+html[data-theme="winter"] .hero{position:relative}
+html[data-theme="winter"] .card::before,
+html[data-theme="winter"] .hero::before{
+ content:"";position:absolute;pointer-events:none;left:10px;right:10px;top:-1px;height:14px;z-index:2;
+ background:
+  radial-gradient(ellipse 33px 10px at 29px 0px,rgba(245,252,255,.98) 96%,transparent 100%) 0 0/134px 14px repeat-x,
+  radial-gradient(ellipse 28px 8px at 94px 0px,rgba(243,251,255,.94) 95%,transparent 100%) 0 0/134px 14px repeat-x;
+ filter:drop-shadow(0 2px 1px rgba(101,153,190,.33))
+}
+html[data-theme="winter"] .hero::before{height:17px;left:6px;right:6px}
+@media(max-width:600px){
+ .theme-ornament{width:175px;opacity:.35}
+ .theme-ornament.decor-left{left:-87px;top:84px}
+ .theme-ornament.decor-right{right:-84px;bottom:20px}
+ .theme-header-art{right:0;width:68px;opacity:.32}
+ .theme-swatch-art{width:69px;height:104px;right:-8px}
+}
+@media(prefers-reduced-motion:reduce){.theme-ornament,.theme-header-art{animation:none;transition:none}}
 </style>
 </head>
 <body>
@@ -726,7 +774,7 @@ function settings(count){return `<div class="section-head"><h2>Sozlamalar va zax
  <div class="card"><h3>Maxfiylik</h3><p>Akkaunt yo‘q. Hisoblar faqat shu qurilmadagi ilova xotirasida turadi. Serverga yuborilmaydi. Boshqa odam ilovani ochsa, uning hisobi noldan boshlanadi.</p><div class="warning">iPhone xotirasi tozalansa yoki ilova ma’lumotlari o‘chirilsa, hisob yo‘qolishi mumkin. Muntazam <b>zaxira nusxa</b> saqlang.</div></div>
  <div class="card"><h3>Zaxira nusxa</h3><p>JSON faylni iPhone’ning Files dasturida saqlashingiz yoki boshqa telefoningizga ko‘chirishingiz mumkin. Zaxira faylni ommaga yubormang. Ushbu zaxirada qazo namozlari, kundalik namoz kalendari, ism va tanlangan fon mavzusi bor; ro‘za hisobi hozircha kirmaydi.</p><button class="big-btn" data-act="export">Zaxira nusxani yuklab olish</button><label class="big-btn secondary" style="display:flex;align-items:center;justify-content:center;cursor:pointer">Zaxiradan tiklash<input id="backupInput" type="file" accept=".json,application/json" hidden></label></div>
  <div class="card"><h3>Ma’lumotlarni tozalash</h3><p>${hasQazoEstimate()?`Jami ${fmt(count.total)} ta qazo, ${fmt(count.completed)} ta ado etilgan qazo qaydi mavjud.`:`Hisob kiritilmagan. ${fmt(count.completed)} ta o‘qilgan namoz qayd etilgan.`}</p><button class="big-btn danger" data-act="reset">Barcha hisoblarni o‘chirish</button></div>`;}
-function render(){const count=evaluate(state);$('app').innerHTML=`<div class="arafa-bar"><a href="./" aria-label="Arafa zikr va duolar sahifasiga qaytish">← Bosh sahifa</a></div><header class="topbar"><div class="brand"><div class="emblem" aria-hidden="true">☾</div><div class="brand-text"><strong>Namoz kalendarim</strong>${ownerName?`<span class="owner-display">👤 ${safeHTML(ownerName)}</span>`:''}</div></div></header><main>${tab==='home'?home(count):tab==='manage'?manage(count):tab==='history'?history():settings(count)}</main><div class="status" role="status">${statusText}</div><nav class="nav" aria-label="Asosiy menyu">${[['home','⌂','Asosiy'],['manage','⊕','Hisob'],['history','◷','Tarix'],['settings','⚙','Sozlama']].map(([t,ico,label])=>`<button data-act="navigate" data-tab="${t}" class="${tab===t?'active':''}" ${tab===t?'aria-current="page"':''}><strong>${ico}</strong><span>${label}</span></button>`).join('')}</nav>`;}
+function render(){const count=evaluate(state);$('app').innerHTML=`<div class="arafa-bar"><a href="./" aria-label="Arafa zikr va duolar sahifasiga qaytish">← Bosh sahifa</a></div><header class="topbar"><div class="theme-header-art" aria-hidden="true">${currentTheme!=='default'?`<svg viewBox="0 0 240 300"><use href="#orn-${currentTheme}"/></svg>`:''}</div><div class="brand"><div class="emblem" aria-hidden="true">☾</div><div class="brand-text"><strong>Namoz kalendarim</strong>${ownerName?`<span class="owner-display">👤 ${safeHTML(ownerName)}</span>`:''}</div></div></header><main>${tab==='home'?home(count):tab==='manage'?manage(count):tab==='history'?history():settings(count)}</main><div class="status" role="status">${statusText}</div><nav class="nav" aria-label="Asosiy menyu">${[['home','⌂','Asosiy'],['manage','⊕','Hisob'],['history','◷','Tarix'],['settings','⚙','Sozlama']].map(([t,ico,label])=>`<button data-act="navigate" data-tab="${t}" class="${tab===t?'active':''}" ${tab===t?'aria-current="page"':''}><strong>${ico}</strong><span>${label}</span></button>`).join('')}</nav>`;}
 function ensureAction(type,keys,n){const count=evaluate(state);if(!Number.isSafeInteger(n)||n<=0||n>10000000){alert('1 dan 10 milliongacha butun son kiriting.');return;}
   if(type==='done'&&keys.some(k=>count.remaining[k]<n)){alert('Tanlangan namoz uchun qazo qoldig‘i yetarli emas. Oldin hisobga qo‘shing.');return;}
   if(n>=365&&type==='done'&&!confirm(`DIQQAT: ${keys.length} ta namoz turining HAR BIRIDAN ${fmt(n)} tadan qazo haqiqatan o‘qildimi?`))return;
