@@ -190,9 +190,158 @@ html[data-theme="winter"]{--bg:#eaf3fa;--theme-scene:radial-gradient(ellipse at 
 .theme-choice-label small{font-size:11px;color:#76897b;line-height:1.3}
 .theme-settings .theme-footnote{margin-top:11px;font-size:11px}
 @media(max-width:360px){.theme-grid{gap:7px}.theme-choice{padding:6px}.theme-swatch{height:52px}}
+
+/* Naqshli fonlar: SVG ornamentlar matn ostida, tegishlarni ushlamaydi */
+.theme-defs{position:absolute;width:0;height:0;overflow:hidden}
+.theme-ornaments{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+.app-shell{position:relative;z-index:1}
+.theme-ornament{position:absolute;display:none;width:clamp(145px,23vw,270px);height:auto;filter:drop-shadow(0 6px 12px rgba(32,62,69,.045));opacity:.55}
+.theme-ornament.decor-left{left:max(-86px,calc((100vw - 950px)/2));top:105px;transform:rotate(-15deg)}
+.theme-ornament.decor-right{right:max(-85px,calc((100vw - 950px)/2));bottom:50px;transform:rotate(19deg) scale(.9)}
+html[data-theme="men"] .decor-men,
+html[data-theme="women"] .decor-women,
+html[data-theme="spring"] .decor-spring,
+html[data-theme="summer"] .decor-summer,
+html[data-theme="autumn"] .decor-autumn,
+html[data-theme="winter"] .decor-winter{display:block}
+html[data-theme="winter"] .theme-ornament{opacity:.64}
+html[data-theme="women"] .theme-ornament{opacity:.6}
+html[data-theme="autumn"] .theme-ornament{opacity:.7}
+/* Sarlavhada har bir mavzu uchun kichik ko‘rinadigan naqsh */
+.topbar{position:relative}
+.topbar .brand{position:relative;z-index:1}
+.theme-header-art{position:absolute;top:0;right:1px;width:74px;height:72px;opacity:.42;pointer-events:none;overflow:hidden}
+.theme-header-art svg{width:100%;height:100%;transform:rotate(9deg) scale(1.6) translate(2px,-2px)}
+html[data-theme="default"] .theme-header-art{display:none}
+html[data-theme="autumn"] .theme-header-art{opacity:.55}
+/* Tema kartochkasida haqiqiy ornamentning kichik eskizi */
+.theme-swatch-art{position:absolute;z-index:2;right:-6px;top:-22px;width:78px;height:112px;transform:rotate(10deg);pointer-events:none;opacity:.78}
+.theme-swatch:after{z-index:1}
+.theme-choice.active .theme-swatch-art{opacity:.95}
+/* Qishda bloklarning yuqori chetida yengil qor uyumi */
+html[data-theme="winter"] .card,
+html[data-theme="winter"] .hero{position:relative}
+html[data-theme="winter"] .card::before,
+html[data-theme="winter"] .hero::before{
+ content:"";position:absolute;pointer-events:none;left:10px;right:10px;top:-1px;height:14px;z-index:2;
+ background:
+  radial-gradient(ellipse 33px 10px at 29px 0px,rgba(245,252,255,.98) 96%,transparent 100%) 0 0/134px 14px repeat-x,
+  radial-gradient(ellipse 28px 8px at 94px 0px,rgba(243,251,255,.94) 95%,transparent 100%) 0 0/134px 14px repeat-x;
+ filter:drop-shadow(0 2px 1px rgba(101,153,190,.33))
+}
+html[data-theme="winter"] .hero::before{height:17px;left:6px;right:6px}
+@media(max-width:600px){
+ .theme-ornament{width:175px;opacity:.35}
+ .theme-ornament.decor-left{left:-87px;top:84px}
+ .theme-ornament.decor-right{right:-84px;bottom:20px}
+ .theme-header-art{right:0;width:68px;opacity:.32}
+ .theme-swatch-art{width:69px;height:104px;right:-8px}
+}
+@media(prefers-reduced-motion:reduce){.theme-ornament,.theme-header-art{animation:none;transition:none}}
 </style>
 </head>
 <body>
+
+  <!-- Dekor SVG: joylashuv bezaklari hisob-kitob elementlariga tegmaydi -->
+  <svg class="theme-defs" width="0" height="0" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <symbol id="orn-flake" viewBox="-40 -40 80 80">
+        <g stroke="#7baed1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none">
+          <path d="M0 -33V33M-28.6 -16.5L28.6 16.5M-28.6 16.5L28.6 -16.5"/>
+          <path d="M-8 -26L0 -19L8 -26M-8 26L0 19L8 26M-27 -8L-17 -7L-20 -17M27 8L17 7L20 17M-27 8L-17 7L-20 17M27 -8L17 -7L20 -17"/>
+          <circle cx="0" cy="0" r="4" fill="#b5d9eb" stroke="none"/>
+        </g>
+      </symbol>
+      <symbol id="orn-winter" viewBox="0 0 240 300">
+        <g fill="#ffffff" opacity=".78"><circle cx="25" cy="38" r="5"/><circle cx="192" cy="27" r="4"/><circle cx="200" cy="145" r="4"/><circle cx="26" cy="242" r="3"/><circle cx="111" cy="272" r="4"/><circle cx="226" cy="260" r="3"/></g>
+        <use href="#orn-flake" x="30" y="58" width="98" height="98"/>
+        <use href="#orn-flake" x="136" y="12" width="67" height="67" opacity=".8"/>
+        <use href="#orn-flake" x="144" y="174" width="86" height="86" opacity=".85"/>
+        <use href="#orn-flake" x="10" y="214" width="41" height="41" opacity=".65"/>
+        <g stroke="#b4d0e2" stroke-width="2" fill="none" opacity=".55"><path d="M172 111v18m-9 -9h18M50 187v14m-7 -7h14"/></g>
+      </symbol>
+      <symbol id="orn-leaf" viewBox="-54 -62 108 120">
+        <path d="M0 -54L12 -31L37 -44L29 -17L53 -8L31 4L39 26L15 20L4 49L0 42L-4 49L-15 20L-39 26L-31 4L-53 -8L-29 -17L-37 -44L-12 -31Z" fill="#d79a3b" stroke="#b77432" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M0 -38V62M0 5L-28 -14M0 4L27 -15M0 19L-17 10M0 20L19 10" fill="none" stroke="#f7dd97" stroke-width="2.5" stroke-linecap="round"/>
+      </symbol>
+      <symbol id="orn-autumn" viewBox="0 0 240 300">
+        <use href="#orn-leaf" x="48" y="20" width="124" height="138" transform="rotate(-22 110 95)"/>
+        <use href="#orn-leaf" x="137" y="143" width="92" height="109" transform="rotate(24 180 197)" opacity=".82"/>
+        <use href="#orn-leaf" x="12" y="180" width="65" height="75" transform="rotate(-48 45 217)" opacity=".7"/>
+        <g fill="#b97537" opacity=".35"><circle cx="204" cy="44" r="4"/><circle cx="26" cy="157" r="3"/><circle cx="113" cy="275" r="4"/></g>
+      </symbol>
+      <symbol id="orn-rose" viewBox="0 0 115 128">
+        <g fill="#dc86ab" stroke="#bf5b88" stroke-width="1.2">
+          <ellipse cx="58" cy="42" rx="18" ry="35" transform="rotate(-44 58 42)"/>
+          <ellipse cx="58" cy="42" rx="18" ry="35" transform="rotate(44 58 42)"/>
+          <ellipse cx="58" cy="41" rx="19" ry="32"/>
+          <ellipse cx="58" cy="53" rx="29" ry="19" transform="rotate(-12 58 53)"/>
+          <ellipse cx="58" cy="46" rx="19" ry="17" fill="#f1b4ce"/>
+        </g>
+        <path d="M51 48C58 31 75 36 70 49C66 59 52 57 55 46C57 40 65 42 64 48" stroke="#a94c76" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M58 74C58 94 63 105 62 127" stroke="#6e9b6b" stroke-width="5" fill="none"/>
+        <path d="M57 95C39 76 28 87 36 99C43 107 53 102 57 95M61 111C80 89 93 104 78 116C70 122 65 117 61 111" fill="#9fbe83" stroke="#6e9b6b" stroke-width="2"/>
+      </symbol>
+      <symbol id="orn-women" viewBox="0 0 240 300">
+        <use href="#orn-rose" x="20" y="12" width="127" height="140" transform="rotate(-18 83 82)"/>
+        <use href="#orn-rose" x="132" y="109" width="93" height="105" transform="rotate(15 180 160)" opacity=".8"/>
+        <g transform="translate(70 177)">
+          <rect x="42" y="0" width="42" height="18" rx="4" fill="#aa8aaf"/>
+          <rect x="32" y="16" width="62" height="11" rx="4" fill="#dbc3d4"/>
+          <rect x="10" y="25" width="108" height="87" rx="19" fill="#e7bed4" fill-opacity=".8" stroke="#ba82a3" stroke-width="3"/>
+          <path d="M25 42L40 34H83" stroke="#fff5fc" stroke-width="7" opacity=".8" fill="none" stroke-linecap="round"/>
+          <rect x="43" y="56" width="44" height="35" rx="10" fill="#fff7f8" opacity=".89"/>
+          <path d="M54 75C63 58 82 68 66 82C54 88 50 79 54 75" fill="#db90b3"/>
+        </g>
+        <g fill="#f4b4cc" opacity=".8"><ellipse cx="208" cy="40" rx="9" ry="5" transform="rotate(-33 208 40)"/><ellipse cx="35" cy="202" rx="10" ry="6" transform="rotate(22 35 202)"/></g>
+      </symbol>
+      <symbol id="orn-spring" viewBox="0 0 240 300">
+        <g stroke="#79a96c" stroke-width="4" fill="none" stroke-linecap="round"><path d="M67 164C62 114 65 100 54 58M119 160C117 121 135 100 156 56M161 175C168 133 186 121 194 100"/></g>
+        <g fill="#e68496" stroke="#c46679" stroke-width="2"><path d="M39 61Q31 21 50 29L58 46L66 28Q91 30 72 67Q57 86 39 61Z"/><path d="M141 59Q135 20 153 29L158 44L172 27Q196 33 173 62Q154 83 141 59Z"/><path d="M179 111Q172 82 188 86L194 98L205 84Q221 95 204 116Q190 128 179 111Z"/></g>
+        <path d="M30 152C57 136 75 148 85 173C58 173 44 167 30 152M123 154C146 126 162 135 171 158C149 162 136 158 123 154" fill="#a2cf8b"/>
+        <g transform="translate(32 181)">
+          <ellipse cx="86" cy="20" rx="83" ry="28" fill="#c58b4b" stroke="#8b653f" stroke-width="4"/>
+          <ellipse cx="86" cy="17" rx="72" ry="20" fill="#99593b"/>
+          <path d="M6 20Q12 74 86 78Q159 72 165 20" fill="#d3aa77" stroke="#9d7949" stroke-width="4"/>
+          <path d="M37 17C54 -2 77 32 92 13S134 10 146 18" fill="none" stroke="#dbb67a" stroke-width="6" stroke-linecap="round"/>
+          <path d="M56 -9Q44 -29 58 -43M92 -13Q76 -33 95 -51M122 -8Q111 -30 124 -43" stroke="#dbb89d" stroke-width="3" stroke-linecap="round" fill="none"/>
+          <path d="M65 55Q86 68 110 55" stroke="#fff1c6" stroke-width="4" fill="none" opacity=".8"/>
+        </g>
+      </symbol>
+      <symbol id="orn-summer" viewBox="0 0 240 300">
+        <circle cx="157" cy="77" r="48" fill="#ffd478" opacity=".9"/>
+        <g stroke="#eab35b" stroke-width="5" stroke-linecap="round"><path d="M157 9V21M157 133v13M88 77H100M215 77h12M107 27l9 10M198 119l10 11M106 124l10-10M200 29l-11 11"/></g>
+        <path d="M20 178Q69 132 120 175T230 176M18 216Q70 171 122 212T231 215M17 253Q65 218 117 251T232 250" fill="none" stroke="#7ac4d4" stroke-width="11" stroke-linecap="round" opacity=".68"/>
+        <g stroke="#87b89b" stroke-width="3.5" fill="none"><path d="M35 135Q53 86 91 76"/><path d="M45 109Q25 94 20 70M62 94Q76 70 76 51M74 83Q93 88 104 73"/></g>
+        <g fill="#8dbd98" opacity=".85"><path d="M46 103Q16 98 12 78Q41 76 46 103Z"/><path d="M64 93Q65 59 83 52Q87 80 64 93Z"/><path d="M75 83Q103 62 116 72Q107 90 75 83Z"/></g>
+      </symbol>
+      <symbol id="orn-men" viewBox="0 0 240 300">
+        <g fill="none" stroke="#7291af" stroke-width="4" stroke-linejoin="round" opacity=".8">
+          <path d="M118 14L168 63L118 113L69 63Z"/>
+          <path d="M118 31L150 63L118 95L86 63Z"/>
+          <path d="M118 125L194 201L118 277L42 201Z"/>
+          <path d="M118 153L166 201L118 249L70 201Z"/>
+          <path d="M118 180L139 201L118 222L97 201Z"/>
+          <path d="M30 63h32M176 63h34M15 201h23M199 201h26" stroke-width="2.5"/>
+        </g>
+        <g fill="#8aabc2"><circle cx="118" cy="63" r="7"/><circle cx="118" cy="201" r="7"/><circle cx="25" cy="126" r="4"/><circle cx="214" cy="138" r="4"/></g>
+      </symbol>
+    </defs>
+  </svg>
+  <div class="theme-ornaments" aria-hidden="true">
+    <svg class="theme-ornament decor-men decor-left" viewBox="0 0 240 300"><use href="#orn-men"/></svg>
+    <svg class="theme-ornament decor-men decor-right" viewBox="0 0 240 300"><use href="#orn-men"/></svg>
+    <svg class="theme-ornament decor-women decor-left" viewBox="0 0 240 300"><use href="#orn-women"/></svg>
+    <svg class="theme-ornament decor-women decor-right" viewBox="0 0 240 300"><use href="#orn-women"/></svg>
+    <svg class="theme-ornament decor-spring decor-left" viewBox="0 0 240 300"><use href="#orn-spring"/></svg>
+    <svg class="theme-ornament decor-spring decor-right" viewBox="0 0 240 300"><use href="#orn-spring"/></svg>
+    <svg class="theme-ornament decor-summer decor-left" viewBox="0 0 240 300"><use href="#orn-summer"/></svg>
+    <svg class="theme-ornament decor-summer decor-right" viewBox="0 0 240 300"><use href="#orn-summer"/></svg>
+    <svg class="theme-ornament decor-autumn decor-left" viewBox="0 0 240 300"><use href="#orn-autumn"/></svg>
+    <svg class="theme-ornament decor-autumn decor-right" viewBox="0 0 240 300"><use href="#orn-autumn"/></svg>
+    <svg class="theme-ornament decor-winter decor-left" viewBox="0 0 240 300"><use href="#orn-winter"/></svg>
+    <svg class="theme-ornament decor-winter decor-right" viewBox="0 0 240 300"><use href="#orn-winter"/></svg>
+  </div>
   <div id="app" class="app-shell"></div>
   <noscript>Ilovadan foydalanish uchun JavaScript yoqilgan bo‘lishi kerak.</noscript>
   <script src="./namoz-estimate.js"></script>
@@ -203,12 +352,12 @@ const KEY = 'qazo_hisobim_local_v1';
 const THEME_KEY='arafa_namoz_theme_v1';
 const THEMES=[
  {id:'default',name:'Asosiy',description:'Sokin och fon'},
- {id:'men',name:'Erkaklar',description:'Grafit va ko‘k'},
- {id:'women',name:'Ayollar',description:'Lavanda va pushti'},
- {id:'spring',name:'Bahor',description:'Mayin yashil va gullar'},
- {id:'summer',name:'Yoz',description:'Quyosh va osmon'},
- {id:'autumn',name:'Kuz',description:'Oltin va yaproqlar'},
- {id:'winter',name:'Qish',description:'Muzrang va qor'}
+ {id:'men',name:'Erkaklar',description:'Ko‘k geometrik naqshlar'},
+ {id:'women',name:'Ayollar',description:'Pushti atirgullar'},
+ {id:'spring',name:'Bahor',description:'Lola va sumalak'},
+ {id:'summer',name:'Yoz',description:'Quyosh va to‘lqinlar'},
+ {id:'autumn',name:'Kuz',description:'Sariq kuzgi barglar'},
+ {id:'winter',name:'Qish',description:'Qor parchalari va qor uyumi'}
 ];
 function readTheme(){
  try{const saved=localStorage.getItem(THEME_KEY);return THEMES.some(x=>x.id===saved)?saved:'default';}catch(_){return 'default';}
@@ -220,10 +369,10 @@ function themeSettings(){
  return `<div class="card theme-settings"><h3>Fon mavzusi</h3>
  <p>O‘zingizga yoqqan fonni tanlang. Tanlov shu qurilmada saqlanadi.</p>
  <div class="theme-grid" role="group" aria-label="Fon mavzusini tanlash">${THEMES.map(t=>`<button type="button" class="theme-choice${currentTheme===t.id?' active':''}" data-act="setTheme" data-theme="${t.id}" aria-pressed="${currentTheme===t.id}">
-   <span class="theme-swatch theme-swatch-${t.id}" aria-hidden="true"><i></i></span>
+   <span class="theme-swatch theme-swatch-${t.id}" aria-hidden="true">${t.id!=='default'?`<svg class="theme-swatch-art" viewBox="0 0 240 300"><use href="#orn-${t.id}"/></svg>`:'' }<i></i></span>
    <span class="theme-choice-label"><strong>${t.name}${currentTheme===t.id?' ✓':''}</strong><small>${t.description}</small></span>
   </button>`).join('')}</div>
- <p class="caption theme-footnote">Fon o‘zgaradi. Kalendar nuqtalarining ma’nosi va rangi o‘zgarmaydi.</p></div>`;
+ <p class="caption theme-footnote">Fon va naqshlar o‘zgaradi. Kalendar nuqtalarining ma’nosi va rangi o‘zgarmaydi.</p></div>`;
 }
 
 const PRAYERS = [
@@ -625,7 +774,7 @@ function settings(count){return `<div class="section-head"><h2>Sozlamalar va zax
  <div class="card"><h3>Maxfiylik</h3><p>Akkaunt yo‘q. Hisoblar faqat shu qurilmadagi ilova xotirasida turadi. Serverga yuborilmaydi. Boshqa odam ilovani ochsa, uning hisobi noldan boshlanadi.</p><div class="warning">iPhone xotirasi tozalansa yoki ilova ma’lumotlari o‘chirilsa, hisob yo‘qolishi mumkin. Muntazam <b>zaxira nusxa</b> saqlang.</div></div>
  <div class="card"><h3>Zaxira nusxa</h3><p>JSON faylni iPhone’ning Files dasturida saqlashingiz yoki boshqa telefoningizga ko‘chirishingiz mumkin. Zaxira faylni ommaga yubormang. Ushbu zaxirada qazo namozlari, kundalik namoz kalendari, ism va tanlangan fon mavzusi bor; ro‘za hisobi hozircha kirmaydi.</p><button class="big-btn" data-act="export">Zaxira nusxani yuklab olish</button><label class="big-btn secondary" style="display:flex;align-items:center;justify-content:center;cursor:pointer">Zaxiradan tiklash<input id="backupInput" type="file" accept=".json,application/json" hidden></label></div>
  <div class="card"><h3>Ma’lumotlarni tozalash</h3><p>${hasQazoEstimate()?`Jami ${fmt(count.total)} ta qazo, ${fmt(count.completed)} ta ado etilgan qazo qaydi mavjud.`:`Hisob kiritilmagan. ${fmt(count.completed)} ta o‘qilgan namoz qayd etilgan.`}</p><button class="big-btn danger" data-act="reset">Barcha hisoblarni o‘chirish</button></div>`;}
-function render(){const count=evaluate(state);$('app').innerHTML=`<div class="arafa-bar"><a href="./" aria-label="Arafa zikr va duolar sahifasiga qaytish">← Bosh sahifa</a></div><header class="topbar"><div class="brand"><div class="emblem" aria-hidden="true">☾</div><div class="brand-text"><strong>Namoz kalendarim</strong>${ownerName?`<span class="owner-display">👤 ${safeHTML(ownerName)}</span>`:''}</div></div></header><main>${tab==='home'?home(count):tab==='manage'?manage(count):tab==='history'?history():settings(count)}</main><div class="status" role="status">${statusText}</div><nav class="nav" aria-label="Asosiy menyu">${[['home','⌂','Asosiy'],['manage','⊕','Hisob'],['history','◷','Tarix'],['settings','⚙','Sozlama']].map(([t,ico,label])=>`<button data-act="navigate" data-tab="${t}" class="${tab===t?'active':''}" ${tab===t?'aria-current="page"':''}><strong>${ico}</strong><span>${label}</span></button>`).join('')}</nav>`;}
+function render(){const count=evaluate(state);$('app').innerHTML=`<div class="arafa-bar"><a href="./" aria-label="Arafa zikr va duolar sahifasiga qaytish">← Bosh sahifa</a></div><header class="topbar"><div class="theme-header-art" aria-hidden="true">${currentTheme!=='default'?`<svg viewBox="0 0 240 300"><use href="#orn-${currentTheme}"/></svg>`:''}</div><div class="brand"><div class="emblem" aria-hidden="true">☾</div><div class="brand-text"><strong>Namoz kalendarim</strong>${ownerName?`<span class="owner-display">👤 ${safeHTML(ownerName)}</span>`:''}</div></div></header><main>${tab==='home'?home(count):tab==='manage'?manage(count):tab==='history'?history():settings(count)}</main><div class="status" role="status">${statusText}</div><nav class="nav" aria-label="Asosiy menyu">${[['home','⌂','Asosiy'],['manage','⊕','Hisob'],['history','◷','Tarix'],['settings','⚙','Sozlama']].map(([t,ico,label])=>`<button data-act="navigate" data-tab="${t}" class="${tab===t?'active':''}" ${tab===t?'aria-current="page"':''}><strong>${ico}</strong><span>${label}</span></button>`).join('')}</nav>`;}
 function ensureAction(type,keys,n){const count=evaluate(state);if(!Number.isSafeInteger(n)||n<=0||n>10000000){alert('1 dan 10 milliongacha butun son kiriting.');return;}
   if(type==='done'&&keys.some(k=>count.remaining[k]<n)){alert('Tanlangan namoz uchun qazo qoldig‘i yetarli emas. Oldin hisobga qo‘shing.');return;}
   if(n>=365&&type==='done'&&!confirm(`DIQQAT: ${keys.length} ta namoz turining HAR BIRIDAN ${fmt(n)} tadan qazo haqiqatan o‘qildimi?`))return;
