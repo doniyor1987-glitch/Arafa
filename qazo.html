@@ -352,12 +352,12 @@ const KEY = 'qazo_hisobim_local_v1';
 const THEME_KEY='arafa_namoz_theme_v1';
 const THEMES=[
  {id:'default',name:'Asosiy',description:'Sokin och fon'},
- {id:'men',name:'Erkaklar',description:'Grafit va ko‘k'},
- {id:'women',name:'Ayollar',description:'Lavanda va pushti'},
- {id:'spring',name:'Bahor',description:'Mayin yashil va gullar'},
- {id:'summer',name:'Yoz',description:'Quyosh va osmon'},
- {id:'autumn',name:'Kuz',description:'Oltin va yaproqlar'},
- {id:'winter',name:'Qish',description:'Muzrang va qor'}
+ {id:'men',name:'Erkaklar',description:'Ko‘k geometrik naqshlar'},
+ {id:'women',name:'Ayollar',description:'Pushti atirgullar'},
+ {id:'spring',name:'Bahor',description:'Lola va sumalak'},
+ {id:'summer',name:'Yoz',description:'Quyosh va to‘lqinlar'},
+ {id:'autumn',name:'Kuz',description:'Sariq kuzgi barglar'},
+ {id:'winter',name:'Qish',description:'Qor parchalari va qor uyumi'}
 ];
 function readTheme(){
  try{const saved=localStorage.getItem(THEME_KEY);return THEMES.some(x=>x.id===saved)?saved:'default';}catch(_){return 'default';}
@@ -372,7 +372,7 @@ function themeSettings(){
    <span class="theme-swatch theme-swatch-${t.id}" aria-hidden="true">${t.id!=='default'?`<svg class="theme-swatch-art" viewBox="0 0 240 300"><use href="#orn-${t.id}"/></svg>`:'' }<i></i></span>
    <span class="theme-choice-label"><strong>${t.name}${currentTheme===t.id?' ✓':''}</strong><small>${t.description}</small></span>
   </button>`).join('')}</div>
- <p class="caption theme-footnote">Fon o‘zgaradi. Kalendar nuqtalarining ma’nosi va rangi o‘zgarmaydi.</p></div>`;
+ <p class="caption theme-footnote">Fon va naqshlar o‘zgaradi. Kalendar nuqtalarining ma’nosi va rangi o‘zgarmaydi.</p></div>`;
 }
 
 const PRAYERS = [
